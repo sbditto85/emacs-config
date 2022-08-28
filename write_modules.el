@@ -2,14 +2,43 @@
   (concat
    (make-string (* 2 idx) ?\s)
    "module "
-   (car names)
+   (replace-regexp-in-string
+    "_"
+    ""
+    (string-inflection-capital-underscore-function (car names))
+    )
    "\n"
    (if (length= (cdr names) 0)
        ""
-     (write_module (1+ idx) (cdr names))
+     (write-module (1+ idx) (cdr names))
      )
    (make-string (* 2 idx) ?\s)
    "end\n"
+   )
+  )
+
+(defun write-module-get-directories ()
+  (append
+   (seq-drop
+    (seq-drop-while
+     (lambda (elt) (not (string-equal elt "lib") ))
+     (split-string
+      (string-trim
+       (file-name-directory
+        (buffer-file-name)
+        )
+       "/"
+       "/"
+       )
+      "/"
+      )
+     )
+    1)
+   (list
+    (file-name-base
+     (buffer-file-name)
+     )
+    )
    )
   )
 
@@ -18,21 +47,7 @@
   (insert
    (write-module
     0
-    (seq-drop
-     (seq-drop-while
-      (lambda (elt) (not (string-equal elt "lib") ))
-      (split-string
-       (string-trim
-        (file-name-directory
-         (buffer-file-name)
-         )
-        "/"
-        "/"
-        )
-       "/"
-       )
-      )
-     1)
+    (write-module-get-directories)
     )
    )
   )
