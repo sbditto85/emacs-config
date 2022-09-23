@@ -1,3 +1,4 @@
+(string-inflection-capital-underscore)
 (defun write-module (idx names)
   (concat
    (make-string (* 2 idx) ?\s)

@@ -7,7 +7,7 @@
     " "
     (string-inflection-capital-underscore-function (car names))
     )
-   "\"\n"
+   "\" do\n"
    (if (length= (cdr names) 0)
        ""
      (write-context (1+ idx) (cdr names))
