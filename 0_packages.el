@@ -6,3 +6,5 @@
 (prelude-require-package 'haskell-mode)
 (prelude-require-package 'erlang)
 (prelude-require-package 'ruby-tools)
+(prelude-require-package 'command-log-mode)
+(prelude-require-package 'ivy-rich)
