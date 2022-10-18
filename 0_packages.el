@@ -12,3 +12,7 @@
 
 ;; Look into this (Emacs from scratch #2 - Adding UI Improvements 36:00 ish) - Casey, Tue Oct 04 2022
 ;; (prelude-require-package 'helpful)
+
+;; (prelude-require-package 'terminal-toggle)
+;; '(terminal-toggle--term-shell "/bin/bash")
+;; (prelude-require-package 'multi-term)
