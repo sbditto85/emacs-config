@@ -10,6 +10,7 @@
 (prelude-require-package 'ivy-rich)
 (prelude-require-package 'windresize)
 (prelude-require-package 'ztree)
+(prelude-require-package 'shell-pop)
 
 ;; Look into this (Emacs from scratch #2 - Adding UI Improvements 36:00 ish) - Casey, Tue Oct 04 2022
 ;; (prelude-require-package 'helpful)
