@@ -56,7 +56,7 @@
   (insert
    (write-context
     0
-    (write-contexts-get-directories)
+    (nconc (write-contexts-get-directories) (list (file-name-base (buffer-file-name))))
     )
    )
   )
