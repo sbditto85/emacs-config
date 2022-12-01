@@ -6,6 +6,7 @@
     (define-key map "f" 'find-file-at-point)
     (define-key map "t" 'shell-pop)
     (define-key map "m" 'write-modules)
+    (define-key map "p" 'copy-file-name)
     (define-key map "r" 'ripgrep-regexp)
     map)
   "Neuron key map.")
