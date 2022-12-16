@@ -12,6 +12,7 @@
 (prelude-require-package 'ztree)
 (prelude-require-package 'shell-pop)
 (prelude-require-package 'ruby-compilation)
+(prelude-require-package 'ivy-searcher)
 
 ;; Look into this (Emacs from scratch #2 - Adding UI Improvements 36:00 ish) - Casey, Tue Oct 04 2022
 ;; (prelude-require-package 'helpful)
