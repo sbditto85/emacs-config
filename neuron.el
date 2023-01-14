@@ -18,3 +18,28 @@
           (lambda ()
             (term-send-raw-string (concat "cd " (shell-quote-argument (projectile-project-root)) "\n"))
             (term-send-raw-string "\C-l")))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Set the mode line to a manageable name that relevant ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun sbditto85--calculated-buffer-name ()
+  (let ((bfn buffer-file-name))
+    (if bfn
+        (let ((n (substring bfn (string-width (projectile-project-root)))))
+          (let ((sw (string-width n))
+                (cut 50)
+                )
+            (if (> sw cut)
+                (substring n (- sw cut))
+              n)
+            )
+          )
+      (buffer-name)
+      )
+    )
+  )
+
+(setq-default mode-line-buffer-identification
+              (list '(:eval (propertized-buffer-identification (sbditto85--calculated-buffer-name)))))
