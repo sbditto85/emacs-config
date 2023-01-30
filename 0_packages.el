@@ -13,6 +13,10 @@
 (prelude-require-package 'shell-pop)
 (prelude-require-package 'ruby-compilation)
 (prelude-require-package 'ivy-searcher)
+(prelude-require-package 'terraform-mode)
+(prelude-require-package 'highlight-indent-guides)
+
+(add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
 
 ;; Look into this (Emacs from scratch #2 - Adding UI Improvements 36:00 ish) - Casey, Tue Oct 04 2022
 ;; (prelude-require-package 'helpful)
