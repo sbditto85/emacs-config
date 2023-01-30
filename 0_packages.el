@@ -15,6 +15,7 @@
 (prelude-require-package 'ivy-searcher)
 (prelude-require-package 'terraform-mode)
 (prelude-require-package 'highlight-indent-guides)
+(prelude-require-package 'counsel-projectile)
 
 (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
 

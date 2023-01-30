@@ -10,6 +10,7 @@
     (define-key map "P" 'projectile-discover-projects-in-search-path)
     (define-key map "p" 'copy-file-name)
     (define-key map "r" 'ripgrep-regexp)
+    (define-key map "R" 'counsel-projectile-rg)
     map)
   "Neuron key map.")
 
