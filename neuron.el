@@ -7,6 +7,7 @@
     (define-key map "t" 'shell-pop)
     (define-key map "m" 'write-modules)
     (define-key map "n" 'neotree-dir)
+    (define-key map "P" 'projectile-discover-projects-in-search-path)
     (define-key map "p" 'copy-file-name)
     (define-key map "r" 'ripgrep-regexp)
     map)
@@ -20,6 +21,11 @@
             (term-send-raw-string "\C-l")))
 
 
+(setq projectile-project-search-path '("~/wsgr/neuron/"))
+;; M-x projectile-discover-projects-in-search-path
+;; M-x projectile-discover-projects-in-directory
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Set the mode line to a manageable name that relevant ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -29,7 +35,7 @@
     (if bfn
         (let ((n (substring bfn (string-width (projectile-project-root)))))
           (let ((sw (string-width n))
-                (cut 50)
+                (cut 60)
                 )
             (if (> sw cut)
                 (substring n (- sw cut))
