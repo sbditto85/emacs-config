@@ -1,5 +1,12 @@
 (defvar neuron-map
-  (let ((map (make-sparse-keymap)))
+  (let ((map (make-sparse-keymap))
+        (ripgrepmap (make-sparse-keymap))
+        )
+
+    (define-key ripgrepmap "n" 'ripgrep-neuron-lib)
+    (define-key ripgrepmap "r" 'counsel-projectile-rg)
+    (define-key ripgrepmap "R" 'ripgrep-regexp)
+
     (define-key map "b" 'magit-blame)
     (define-key map "d" 'insert-date-time)
     (define-key map "c" 'write-contexts)
@@ -9,8 +16,8 @@
     (define-key map "n" 'neotree-dir)
     (define-key map "P" 'projectile-discover-projects-in-search-path)
     (define-key map "p" 'copy-file-name)
-    (define-key map "r" 'ripgrep-regexp)
-    (define-key map "R" 'counsel-projectile-rg)
+    (define-key map "r" ripgrepmap)
+
     map)
   "Neuron key map.")
 
