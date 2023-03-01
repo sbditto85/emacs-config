@@ -21,6 +21,7 @@
             (term-send-raw-string (concat "cd " (shell-quote-argument (projectile-project-root)) "\n"))
             (term-send-raw-string "\C-l")))
 
+(add-hook 'magit-revision-mode-hook 'visual-line-mode)
 
 (setq projectile-project-search-path '("~/wsgr/neuron/"))
 ;; M-x projectile-discover-projects-in-search-path
