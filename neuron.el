@@ -27,6 +27,15 @@
 ;; M-x projectile-discover-projects-in-search-path
 ;; M-x projectile-discover-projects-in-directory
 
+(defun ripgrep-neuron-lib (search_term)
+  (interactive
+   (list
+    (read-from-minibuffer "Ripgrep search for: " (thing-at-point 'symbol))
+    )
+   )
+  (ripgrep-regexp search_term "~/wsgr/neuron" '("-g \"**/lib/**/*.rb\""))
+  )
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Set the mode line to a manageable name that relevant ;;
