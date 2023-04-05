@@ -16,6 +16,7 @@
 (prelude-require-package 'terraform-mode)
 (prelude-require-package 'highlight-indent-guides)
 (prelude-require-package 'counsel-projectile)
+(prelude-require-package 'modus-themes)
 
 (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
 
