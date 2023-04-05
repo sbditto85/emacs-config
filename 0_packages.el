@@ -17,6 +17,7 @@
 (prelude-require-package 'highlight-indent-guides)
 (prelude-require-package 'counsel-projectile)
 (prelude-require-package 'modus-themes)
+(prelude-require-package 'github-browse-file)
 
 (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
 
