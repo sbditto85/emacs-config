@@ -30,7 +30,15 @@
 
 (add-hook 'magit-revision-mode-hook 'visual-line-mode)
 
-(setq projectile-project-search-path '("~/wsgr/neuron/"))
+(add-hook 'markdown-mode-hook (lambda ()
+                                (make-local-variable 'prelude-whitespace)
+                                (setq prelude-whitespace nil)
+
+                                (make-local-variable 'prelude-clean-whitespace-on-save)
+                                (setq prelude-clean-whitespace-on-save nil)
+                                ))
+
+(setq projectile-project-search-path '("~/wsgr/neuron/" "~/eventide/"))
 ;; M-x projectile-discover-projects-in-search-path
 ;; M-x projectile-discover-projects-in-directory
 
