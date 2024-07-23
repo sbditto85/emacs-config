@@ -1,3 +1,72 @@
+#+TITLE: My GNU Emacs Config
+#+AUTHOR: Me
+#+DESCRIPTION: My personal Emacs config.
+#+STARTUP: showeverything
+#+OPTIONS: toc:3
+#+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
+
+* TABLE OF CONTENTS :toc:
+- [[#resources][Resources]]
+- [[#load-first][LOAD FIRST]]
+  - [[#automatic-package-updates][Automatic Package Updates]]
+- [[#keep-folders-clean][Keep Folders Clean]]
+- [[#basic-ui-configuration][Basic UI Configuration]]
+- [[#keybinding-configuration][Keybinding Configuration]]
+  - [[#dired][Dired]]
+- [[#ui-configuration][UI Configuration]]
+  - [[#color-theme][Color Theme]]
+  - [[#better-modeline][Better Modeline]]
+  - [[#which-key][Which Key]]
+  - [[#ivy-and-counsel][Ivy and Counsel]]
+  - [[#helpful-help-commands][Helpful Help Commands]]
+  - [[#text-scaling][Text Scaling]]
+  - [[#window-numbering][Window Numbering]]
+  - [[#quick-switching-setups][Quick Switching Setups]]
+- [[#projectile][Projectile]]
+  - [[#path][Path]]
+  - [[#search-all-projects][Search all projects]]
+- [[#magit][Magit]]
+- [[#workspaces][Workspaces]]
+  - [[#perspective][Perspective]]
+  - [[#perspective-projectile][Perspective Projectile]]
+  - [[#perspective-tabs][Perspective Tabs]]
+  - [[#tab-selection][Tab Selection]]
+  - [[#tab-renaming][Tab Renaming]]
+- [[#org-mode][Org Mode]]
+  - [[#environment][Environment]]
+  - [[#beginning][Beginning]]
+  - [[#capture-templates][Capture Templates]]
+  - [[#end][End]]
+- [[#ztree][ZTree]]
+- [[#github-browse-file][GitHub Browse File]]
+- [[#envrc][Envrc]]
+- [[#ripgrep][RipGrep]]
+- [[#typescript-mode][TypeScript Mode]]
+- [[#move-dup][Move Dup]]
+- [[#vterm][vterm]]
+- [[#markdown][Markdown]]
+- [[#ruby][Ruby]]
+  - [[#ruby-mode][Ruby Mode]]
+  - [[#evil-ruby-text-object][Evil Ruby Text Object]]
+- [[#whitespace][Whitespace]]
+  - [[#whitespace-mode][Whitespace mode]]
+- [[#time][Time]]
+- [[#comments][Comments]]
+- [[#multiple-cursors][Multiple Cursors]]
+  - [[#highlight-select][Highlight select]]
+  - [[#cursor-on-next-line][Cursor on next line]]
+  - [[#end-1][End]]
+- [[#movement][Movement]]
+
+* Resources
+
+Emacs from Scratch: https://github.com/daviwil/emacs-from-scratch/blob/master/Emacs.org?plain=1
+Configuring Emacs: https://gitlab.com/dwt1/configuring-emacs/-/blob/main/06-cleaning-up-the-config/config.org?ref_type=heads&plain=1
+
+* LOAD FIRST
+
+#+begin_src emacs-lisp
+
   ;; Initialize package sources
   (require 'package)
 
@@ -16,6 +85,16 @@
   (require 'use-package)
   (setq use-package-always-ensure t)
 
+#+end_src
+
+** Automatic Package Updates
+
+The auto-package-update package helps us keep our Emacs packages up to date!  It will prompt you after a certain number of days either at startup or at a specific time of day to remind you to update your packages.
+
+You can also use =M-x auto-package-update-now= to update right now!
+
+#+begin_src emacs-lisp
+
   (use-package auto-package-update
     :custom
     (auto-package-update-interval 7)
@@ -24,6 +103,14 @@
     :config
     (auto-package-update-maybe)
     (auto-package-update-at-time "09:00"))
+
+#+end_src
+
+* Keep Folders Clean
+
+We use the [[https://github.com/emacscollective/no-littering/blob/master/no-littering.el][no-littering]] package to keep folders where we edit files and the Emacs configuration folder clean!  It knows about a wide variety of variables for built in Emacs features as well as those from community packages so it can be much easier than finding and setting these variables yourself.
+
+#+begin_src emacs-lisp
 
   ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
   ;; reliably, set `user-emacs-directory` before loading no-littering!
@@ -35,6 +122,14 @@
   ;; auto save files in the same path as it uses for sessions
   (setq auto-save-file-name-transforms
         `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+
+#+end_src
+
+* Basic UI Configuration
+
+This section configures basic UI settings that remove unneeded elements to make Emacs look a lot more minimal and modern.  If you're just getting started in Emacs, the menu bar might be helpful so you can remove the =(menu-bar-mode -1)= line if you'd like to still see that.
+
+#+begin_src emacs-lisp
 
   (setq inhibit-startup-message t)
 
@@ -54,6 +149,14 @@
                   vterm-mode-hook
                   eshell-mode-hook))
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+#+end_src
+
+* Keybinding Configuration
+
+This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil-mode]] for a Vi-like modal editing experience.  [[https://github.com/noctuid/general.el][general.el]] is used for easy keybinding configuration that integrates well with which-key.  [[https://github.com/emacs-evil/evil-collection][evil-collection]] is used to automatically configure various Emacs modes with Vi-like keybindings for evil-mode.
+
+#+begin_src emacs-lisp
 
   ;; Make ESC quit prompts
   (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -115,10 +218,22 @@
     (setq-default evil-escape-key-sequence "jk")
     )
 
+#+end_src
+
+** Dired
+
+#+begin_src emacs-lisp
+
  (evil-define-key 'normal dired-mode-map
    (kbd "h") 'dired-up-directory
    (kbd "l") 'dired-find-file
    )
+
+#+end_src
+
+*** Hide Details
+
+#+begin_src emacs-lisp
 
 (add-hook 'dired-mode-hook
   (lambda ()
@@ -127,8 +242,28 @@
     )
   )
 
+#+end_src
+
+* UI Configuration
+
+** Color Theme
+
+Modus themes are great for high contrast for easy visibility
+
+#+begin_src emacs-lisp
+
   (use-package modus-themes
     :init (load-theme 'modus-operandi t))
+
+#+end_src
+
+** Better Modeline
+
+[[https://github.com/seagle0128/doom-modeline][doom-modeline]] is a very attractive and rich (yet still minimal) mode line configuration for Emacs.  The default configuration is quite good but you can check out the [[https://github.com/seagle0128/doom-modeline#customize][configuration options]] for more things you can enable or disable.
+
+*NOTE:* The first time you load your configuration on a new machine, you'll need to run `M-x all-the-icons-install-fonts` so that mode line icons display correctly.
+
+#+begin_src emacs-lisp
 
 (use-package all-the-icons)
 
@@ -136,12 +271,30 @@
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 15)))
 
+#+end_src
+
+** Which Key
+
+[[https://github.com/justbur/emacs-which-key][which-key]] is a useful UI panel that appears when you start pressing any key binding in Emacs to offer you all possible completions for the prefix.  For example, if you press =C-c= (hold control and press the letter =c=), a panel will appear at the bottom of the frame displaying all of the bindings under that prefix and which command they run.  This is very useful for learning the possible key bindings in the mode of your current buffer.
+
+#+begin_src emacs-lisp
+
   (use-package which-key
     :defer 0
     :diminish which-key-mode
     :config
     (which-key-mode)
     (setq which-key-idle-delay 1))
+
+#+end_src
+
+** Ivy and Counsel
+
+[[https://oremacs.com/swiper/][Ivy]] is an excellent completion framework for Emacs.  It provides a minimal yet powerful selection menu that appears when you open files, switch buffers, and for many other tasks in Emacs.  Counsel is a customized set of commands to replace `find-file` with `counsel-find-file`, etc which provide useful commands for each of the default completion commands.
+
+[[https://github.com/Yevgnen/ivy-rich][ivy-rich]] adds extra columns to a few of the Counsel commands to provide more information about each item.
+
+#+begin_src emacs-lisp
 
   (use-package ivy
     :diminish
@@ -175,6 +328,16 @@
     :config
     (counsel-mode 1))
 
+#+end_src
+
+*** Improved Candidate Sorting with prescient.el
+
+prescient.el provides some helpful behavior for sorting Ivy completion candidates based on how recently or frequently you select them.  This can be especially helpful when using =M-x= to run commands that you don't have bound to a key but still need to access occasionally.
+
+This Prescient configuration is optimized for use in System Crafters videos and streams, check out the [[https://youtu.be/T9kygXveEz0][video on prescient.el]] for more details on how to configure it!
+
+#+begin_src emacs-lisp
+
   (use-package ivy-prescient
     :after counsel
     :custom
@@ -183,6 +346,14 @@
     ;; Uncomment the following line to have sorting remembered across sessions!
     ;(prescient-persist-mode 1)
     (ivy-prescient-mode 1))
+
+#+end_src
+
+** Helpful Help Commands
+
+[[https://github.com/Wilfred/helpful][Helpful]] adds a lot of very helpful (get it?) information to Emacs' =describe-= command buffers.  For example, if you use =describe-function=, you will not only get the documentation about the function, you will also see the source code of the function and where it gets used in other places in the Emacs configuration.  It is very useful for figuring out how things work in Emacs.
+
+#+begin_src emacs-lisp
 
   (use-package helpful
     :commands (helpful-callable helpful-variable helpful-command helpful-key)
@@ -194,6 +365,14 @@
     ([remap describe-command] . helpful-command)
     ([remap describe-variable] . counsel-describe-variable)
     ([remap describe-key] . helpful-key))
+
+#+end_src
+
+** Text Scaling
+
+This is an example of using [[https://github.com/abo-abo/hydra][Hydra]] to design a transient key binding for quickly adjusting the scale of the text on screen.  We define a hydra that is bound to =C-s t s= and, once activated, =j= and =k= increase and decrease the text scale.  You can press any other key (or =f= specifically) to exit the transient key map.
+
+#+begin_src emacs-lisp
 
   (use-package hydra
     :defer t)
@@ -207,11 +386,25 @@
   (custom/leader-keys
     "t s" '(hydra-text-scale/body :which-key "scale text"))
 
+#+end_src
+
+** Window Numbering
+
+#+begin_src emacs-lisp
+
 (use-package window-numbering
   :config
   (window-numbering-mode 1)
   )
 
+#+end_src
+
+** Quick Switching Setups
+*** Sharing Setup
+
+ When sharing with others the font size should be larger so its easier for them to read. When I'm solo I don't mind having the font be a bit smaller
+
+#+begin_src emacs-lisp
 (defun custom/set-sharing ()
   (interactive)
 
@@ -227,6 +420,12 @@
   (global-display-line-numbers-mode -1)
   (global-display-line-numbers-mode 1)
   )
+
+#+end_src
+
+*** Solo Setup
+
+#+begin_src emacs-lisp
 
 (defun custom/set-solo ()
   (interactive)
@@ -244,7 +443,19 @@
   (global-display-line-numbers-mode 1)
   )
 
+#+end_src
+
+*** Set Default Setup (Solo)
+
+#+begin_src emacs-lisp
+
 (custom/set-solo)
+
+#+end_src
+
+* Projectile
+
+#+begin_src emacs-lisp
 
 (use-package projectile
   :diminish projectile-mode
@@ -260,6 +471,12 @@
 
 (use-package counsel-projectile
   :config (counsel-projectile-mode))
+
+#+end_src
+
+** Path
+
+#+begin_src emacs-lisp
 
 (defun custom/projects-path ()
   (getenv "PROJECTS_PATH")
@@ -277,6 +494,12 @@
 
 (custom/set-projectile-project-path)
 
+#+end_src
+
+** Search all projects
+
+#+begin_src emacs-lisp
+
 (defun custom/search-projects ()
   (interactive)
   (let ((default-directory (nth 0 (split-string (custom/projects-path))))
@@ -289,10 +512,25 @@
   "s"  '(:ignore s :which-key "search")
   "s P" '(custom/search-projects :which-key "Search Projects"))
 
+#+end_src
+
+* Magit
+
+#+begin_src emacs-lisp
+
 (use-package magit
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
   )
+
+#+end_src
+
+* Workspaces
+
+** Perspective
+See the [README.md](https://github.com/nex3/perspective-el)
+
+#+begin_src emacs-lisp
 
   (use-package perspective
     ;; :bind
@@ -304,9 +542,23 @@
     (persp-mode)
     )
 
+#+end_src
+
+** Perspective Projectile
+
+#+begin_src emacs-lisp
+
   (use-package persp-projectile
     :after perspective
     )
+
+#+end_src
+
+** Perspective Tabs
+Taken from [this git repository](https://git.sr.ht/~woozong/perspective-tabs)
+
+
+#+begin_src emacs-lisp
 
   (use-package perspective-tabs
     :load-path "manual"
@@ -314,6 +566,13 @@
     :config
     (perspective-tabs-mode +1)
     )
+
+#+end_src
+
+** Tab Selection
+See [Tab Bars](https://www.gnu.org/software/emacs/manual/html_node/emacs/Tab-Bars.html)
+
+#+begin_src emacs-lisp
 
   (setq tab-bar-tab-hints t)
   (keymap-set evil-normal-state-map "C-M-1" '(lambda () (interactive) (tab-select 1)))
@@ -326,6 +585,13 @@
   (keymap-set evil-normal-state-map "C-M-8" '(lambda () (interactive) (tab-select 8)))
   (keymap-set evil-normal-state-map "C-M-9" '(lambda () (interactive) (tab-select 9)))
 
+#+end_src
+
+** Tab Renaming
+[Reddit comment](https://www.reddit.com/r/emacs/comments/r16adq/comment/hlxl1ek/)
+
+#+begin_src emacs-lisp
+
   ;; (use-package tab-bar
   ;;   :bind (:map tab-prefix-map ("p" . my/new-project-tab))
   ;;   :init
@@ -337,6 +603,15 @@
   ;;     )
   ;;   )
 
+#+end_src
+
+* Org Mode
+
+** Environment
+
+
+#+begin_src emacs-lisp
+
 (defun custom/org-files-path ()
   (or
    (getenv "ORG_FILES_PATH")
@@ -346,9 +621,21 @@
 
 (setq org-directory (custom/org-files-path))
 
+#+end_src
+
+** Beginning
+
+#+begin_src emacs-lisp
+
   (use-package org
     ;; :hook (org-mode . efs/org-mode-setup)
     :config
+
+#+end_src
+
+** Capture Templates
+
+#+begin_src emacs-lisp
 
     (setq org-capture-templates
       `(("t" "Tasks / Projects")
@@ -384,25 +671,77 @@
         "n t" '((lambda () (interactive) (org-capture nil "tt")) :which-key "Task Inbox")
         )
 
+#+end_src
+
+** End
+
+#+begin_src emacs-lisp
+
   )
+
+#+end_src
+
+* ZTree
+
+#+begin_src emacs-lisp
 
 (use-package ztree
   )
 
+#+end_src
+
+* GitHub Browse File
+
+#+begin_src emacs-lisp
+
 (use-package github-browse-file
   )
+
+#+end_src
+
+* Envrc
+
+#+begin_src emacs-lisp
 
 (use-package envrc
   )
 
+#+end_src
+
+* RipGrep
+
+#+begin_src emacs-lisp
+
 (use-package ripgrep
   )
+
+#+end_src
+
+* TypeScript Mode
+
+#+begin_src emacs-lisp
 
 (use-package typescript-mode
   )
 
+#+end_src
+
+* Move Dup
+
+#+begin_src emacs-lisp
+
 (use-package move-dup
   )
+
+#+end_src
+
+* vterm
+
+[[https://github.com/akermu/emacs-libvterm/][vterm]] is an improved terminal emulator package which uses a compiled native module to interact with the underlying terminal applications.  This enables it to be much faster than =term-mode= and to also provide a more complete terminal emulation experience.
+
+Make sure that you have the [[https://github.com/akermu/emacs-libvterm/#requirements][necessary dependencies]] installed before trying to use =vterm= because there is a module that will need to be compiled before you can use it successfully.
+
+#+begin_src emacs-lisp
 
   (use-package vterm
     :commands vterm
@@ -411,26 +750,66 @@
     ;;(setq vterm-shell "zsh")                       ;; Set this to customize the shell to launch
     (setq vterm-max-scrollback 10000))
 
+#+end_src
+
+* Markdown
+
+#+begin_src emacs-lisp
+
   (use-package markdown-mode
     ;; :mode ("README\\.md\\'" . gfm-mode)
     ;; :init (setq markdown-command "multimarkdown")
     )
 
+#+end_src
+
+* Ruby
+
+** Ruby Mode
+
+#+begin_src emacs-lisp
+
 (use-package ruby-mode
   )
+
+#+end_src
+
+** Evil Ruby Text Object
+
+#+begin_src emacs-lisp
 
 (use-package evil-ruby-text-objects
   :after ruby-mode
   :hook ruby-mode
   )
 
+#+end_src
+
+* Whitespace
+
+** Whitespace mode
+
+#+begin_src emacs-lisp
+
 (global-whitespace-mode +1)
 (setq whitespace-style '(face indentation trailing))
+
+#+end_src
+
+*** Trim lines with only spaces from a file
+
+#+begin_src emacs-lisp
 
 (defun custom/remove-space-lines ()
   (interactive)
   (evil-ex "%s/^ +$//")
   )
+
+#+end_src
+
+* Time
+
+#+begin_src emacs-lisp
 
 (defun custom/append-date-time ()
   (interactive)
@@ -444,6 +823,12 @@
   (interactive)
   (evil-append 0)
   (insert (format-time-string "%a %b %d %Y")))
+
+#+end_src
+
+* Comments
+
+#+begin_src emacs-lisp
 
 (defun custom/author ()
   (let ((env-author (getenv "AUTHOR")))
@@ -463,14 +848,67 @@
   "c"  '(:ignore c :which-key "comment")
   "c a" '(custom/comment-attribution :which-key "attribute comment"))
 
+#+end_src
+
+* Multiple Cursors
+
+#+begin_src emacs-lisp
+
 (use-package evil-mc
   :config
   (global-evil-mc-mode  1)
 
+#+end_src
+
+** Highlight select
+
+I want to be able to quickly highlight only a select few matches and "g z d" is just too time consuming
+
+#+begin_src emacs-lisp
+
   (keymap-set evil-insert-state-map "M-I" 'evil-mc-make-and-goto-next-match)
   (keymap-set evil-normal-state-map "M-I" 'evil-mc-make-and-goto-next-match)
+
+#+end_src
+
+** Cursor on next line
+
+I want to be able to quickly add cursors below my current one if the changes lines up perfectly
+
+#+begin_src emacs-lisp
 
   (keymap-set evil-insert-state-map "M-i" 'evil-mc-make-cursor-move-next-line)
   (keymap-set evil-normal-state-map "M-i" 'evil-mc-make-cursor-move-next-line)
 
+#+end_src
+
+** End
+
+#+begin_src emacs-lisp
+
   )
+
+#+end_src
+
+* Movement
+# ** Searching
+
+# Search with swiper in buffer
+# #+begin_src emacs-lisp
+#
+# (map! :desc "Search with Swiper" :n "C-s" #'+default/search-buffer)
+# (map! :desc "Search with Swiper" :i "C-s" #'+default/search-buffer)
+#
+# #+end_src
+
+# ** Workspaces
+
+# *** Don't open one when switching projects
+
+# #+begin_src emacs-lisp
+#
+# ;; (setq +workspaces-on-switch-project-behavior nil)
+#
+# #+end_src
+
+
