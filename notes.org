@@ -1,0 +1,7 @@
+* VC Package Installation
+
+#+begin_src emacs-lisp
+(use-package modern-tab-bar
+  :vc (:url "https://github.com/aaronjensen/emacs-modern-tab-bar"
+       :rev :newest))
+#+end_src
