@@ -30,3 +30,19 @@ directory cleaner
 (use-package no-littering
   :ensure (:wait t))
 #+end_src
+
+* Startup Time
+
+Aaron had it setup to print out the start up time. I realize now that is a very
+important thing to keep an eye on, but I usually leave Emacs open for extended
+periods of time and don't close it often. Mostly leaving this a reminder to be
+efficient in my configuration and always consider trade offs and decisions
+rather than blowing past them.
+
+#+begin_src emacs-lisp
+;; ## There is another message shown about `C-h C-a`, how do I disable that? - Casey, Thu Nov 07 2024
+(add-hook 'after-init-hook
+          (lambda ()
+            (let ((inhibit-message t))
+              (message "Emacs init time: %s" (emacs-init-time)))))
+#+end_src
