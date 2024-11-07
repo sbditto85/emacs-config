@@ -18,3 +18,15 @@ confidence in full control of Emacs and how to properly do that.
                    temporary-file-directory))
 #+end_src
 
+** No Littering
+
+Move all common files typically written to the =user-emacs-directory= to the =var=
+and =etc= subdirectories so that they can be included in =.gitignore=
+
+This was also highly recommended by =emacs from scratch= as it keeps your
+directory cleaner
+
+#+begin_src emacs-lisp
+(use-package no-littering
+  :ensure (:wait t))
+#+end_src
