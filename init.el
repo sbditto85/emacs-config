@@ -47,3 +47,13 @@
 ;; use-package uses elpaca
 (elpaca elpaca-use-package
   (elpaca-use-package-mode))
+
+;; ## Identify if this is how I want to do literate config or not. Maybe multiple
+;; ## literate config files? I do need to identify a better way to organize the
+;; ## literate config if I keep it in one file - Casey, Thu Nov 07 2024
+
+;; Literate config from Aaron Jensen, defaults to config.org and config.el
+(use-package literate-config
+  :ensure (:wait t :host github :repo "aaronjensen/emacs-literate-config" :protocol ssh))
+
+(literate-config-init)
