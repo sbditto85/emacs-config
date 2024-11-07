@@ -40,10 +40,6 @@
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
-;; Prevent Custom from modifying this file.
-(setq custom-file (expand-file-name
-                   (format "custom-%d-%d.el" (emacs-pid) (random))
-                   temporary-file-directory))
 ;; use-package uses elpaca
 (elpaca elpaca-use-package
   (elpaca-use-package-mode))

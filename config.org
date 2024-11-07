@@ -1,0 +1,20 @@
+#+title: Emacs Config
+
+* Base Settings
+
+** Customization Saving
+
+Do not save customizations in =init.el=, instead save them in a temporary file
+that will be discarded. As a result, any customizations made in a session will
+not be persisted across sessions.
+
+The reason for not using customizations is to force the use and understanding of
+configuring Emacs myself, rather than relying on a UI. This will give me
+confidence in full control of Emacs and how to properly do that.
+
+#+begin_src emacs-lisp
+(setq custom-file (expand-file-name
+                   (format "custom-%d-%d.el" (emacs-pid) (random))
+                   temporary-file-directory))
+#+end_src
+
