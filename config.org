@@ -39,10 +39,20 @@ periods of time and don't close it often. Mostly leaving this a reminder to be
 efficient in my configuration and always consider trade offs and decisions
 rather than blowing past them.
 
-#+begin_src emacs-lisp
-;; ## There is another message shown about `C-h C-a`, how do I disable that? - Casey, Thu Nov 07 2024
+Changed this from using a web hook:
+
+#+begin_src emacs-lisp :tangle no
 (add-hook 'after-init-hook
           (lambda ()
             (let ((inhibit-message t))
               (message "Emacs init time: %s" (emacs-init-time)))))
+#+end_src
+
+to setting the function =startup-echo-area-message= as that is the message that
+Emacs will show at the bottom of the screen at startup and the default one is
+very difficult to ignore
+
+#+begin_src emacs-lisp
+(defun startup-echo-area-message ()
+  (format "Emacs init time: %s" (emacs-init-time)))
 #+end_src
