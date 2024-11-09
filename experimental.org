@@ -1,0 +1,295 @@
+#+title: Experimental Emacs Config
+
+This Emacs configuration is for extra configuration. Things that the group may not have got to yet, but I want to experiment with anyways.
+
+* Basic UI Configuration
+
+This section configures basic UI settings that remove unneeded elements to make Emacs look a lot more minimal and modern.  If you're just getting started in Emacs, the menu bar might be helpful so you can remove the =(menu-bar-mode -1)= line if you'd like to still see that.
+
+#+begin_src emacs-lisp
+
+  (setq inhibit-startup-message t)
+
+  (scroll-bar-mode -1)        ; Disable visible scrollbar
+  (tool-bar-mode -1)          ; Disable the toolbar
+  (tooltip-mode -1)           ; Disable tooltips
+  (set-fringe-mode 10)        ; Give some breathing room
+
+  (menu-bar-mode -1)            ; Disable the menu bar
+
+  (column-number-mode)
+  (global-display-line-numbers-mode t)
+
+  ;; Disable line numbers for some modes
+  (dolist (mode '(term-mode-hook
+                  shell-mode-hook
+                  vterm-mode-hook
+                  eshell-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+#+end_src
+
+* Keybinding Configuration
+
+This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil-mode]] for a Vi-like modal editing experience.  [[https://github.com/noctuid/general.el][general.el]] is used for easy keybinding configuration that integrates well with which-key.  [[https://github.com/emacs-evil/evil-collection][evil-collection]] is used to automatically configure various Emacs modes with Vi-like keybindings for evil-mode.
+
+#+begin_src emacs-lisp
+
+  ;; Make ESC quit prompts
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+  (use-package general
+    :ensure t
+    :after evil
+    :config
+    (general-create-definer custom/leader-keys
+      :keymaps '(normal insert visual emacs)
+      :prefix "SPC"
+      :global-prefix "C-SPC")
+
+    (custom/leader-keys
+      "t"  '(:ignore t :which-key "toggles")
+
+      "o ec" '(lambda () (interactive) (find-file (expand-file-name "~/.config/emacs/config.org")))
+
+      "p"  '(:ignore p :which-key "project")
+      "pp" '(projectile-persp-switch-project :which-key "Switch Project")
+      "pk" '(perspective-tabs-close-tab :which-key "Close Project")
+
+      "q"  '(:ignore q :which-key "quit/session")
+      "qq" '(save-buffers-kill-terminal :which-key "Save and Close Emacs")
+      )
+    )
+
+  (use-package evil
+    :ensure t
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-keybinding nil)
+    (setq evil-want-C-u-scroll t)
+    (setq evil-want-C-i-jump nil)
+    :config
+    (evil-mode 1)
+    (keymap-set evil-insert-state-map "C-g" 'evil-normal-state)
+    (keymap-set evil-insert-state-map "C-j" 'evil-next-line)
+    (keymap-set evil-insert-state-map "C-k" 'evil-previous-line)
+
+    ;; (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+
+    ;; Use visual line motions even outside of visual-line-mode buffers
+    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+
+    (evil-set-initial-state 'messages-buffer-mode 'normal)
+    (evil-set-initial-state 'dashboard-mode 'normal)
+    )
+
+  (use-package evil-collection
+    :ensure t
+    :after evil
+    :config
+    (evil-collection-init)
+    )
+
+  (use-package evil-escape
+    :ensure t
+    :after evil
+    :config
+    (evil-escape-mode)
+    (setq-default evil-escape-key-sequence "jk")
+    )
+
+#+end_src
+
+** Dired
+
+#+begin_src emacs-lisp
+
+(use-package dired
+  :after evil
+  :config
+  (evil-define-key 'normal dired-mode-map
+    (kbd "h") 'dired-up-directory
+    (kbd "l") 'dired-find-file
+    )
+  )
+
+#+end_src
+
+* UI Configuration
+
+** Color Theme
+
+Modus themes are great for high contrast for easy visibility
+
+#+begin_src emacs-lisp
+
+  (use-package modus-themes
+    :ensure t
+    :init (load-theme 'modus-operandi t))
+
+#+end_src
+
+** Better Modeline
+
+[[https://github.com/seagle0128/doom-modeline][doom-modeline]] is a very attractive and rich (yet still minimal) mode line configuration for Emacs.  The default configuration is quite good but you can check out the [[https://github.com/seagle0128/doom-modeline#customize][configuration options]] for more things you can enable or disable.
+
+*NOTE:* The first time you load your configuration on a new machine, you'll need to run `M-x all-the-icons-install-fonts` so that mode line icons display correctly.
+
+#+begin_src emacs-lisp
+
+(use-package all-the-icons
+  :ensure t
+  )
+
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1)
+  :custom ((doom-modeline-height 15)))
+
+#+end_src
+
+** Which Key
+
+[[https://github.com/justbur/emacs-which-key][which-key]] is a useful UI panel that appears when you start pressing any key binding in Emacs to offer you all possible completions for the prefix.  For example, if you press =C-c= (hold control and press the letter =c=), a panel will appear at the bottom of the frame displaying all of the bindings under that prefix and which command they run.  This is very useful for learning the possible key bindings in the mode of your current buffer.
+
+#+begin_src emacs-lisp
+
+  (use-package which-key
+    :ensure t
+    :defer 0
+    :diminish which-key-mode
+    :config
+    (which-key-mode)
+    (setq which-key-idle-delay 1))
+
+#+end_src
+
+
+** Window Numbering
+
+#+begin_src emacs-lisp
+
+(use-package window-numbering
+  :ensure t
+  :config
+  (window-numbering-mode 1)
+  )
+
+#+end_src
+
+** Quick Switching Setups
+*** Sharing Setup
+
+ When sharing with others the font size should be larger so its easier for them to read. When I'm solo I don't mind having the font be a bit smaller
+
+#+begin_src emacs-lisp
+(defun custom/set-sharing ()
+  (interactive)
+
+  ;; Set the font size
+  (set-face-attribute 'default nil :height 185)
+
+  ;; Setup magit to hide confusing data
+  (setq magit-status-headers-hook
+        '(magit-insert-error-header magit-insert-diff-filter-header magit-insert-head-branch-header))
+
+  ;; Set line numbering to be "normal"
+  (setq display-line-numbers-type t)
+  (global-display-line-numbers-mode -1)
+  (global-display-line-numbers-mode 1)
+  )
+
+#+end_src
+
+*** Solo Setup
+
+#+begin_src emacs-lisp
+
+(defun custom/set-solo ()
+  (interactive)
+
+  ;; Set the font size
+  (set-face-attribute 'default nil :height 150)
+
+  ;; Setup magit status to have more data
+  (setq magit-status-headers-hook
+        '(magit-insert-error-header magit-insert-diff-filter-header magit-insert-head-branch-header magit-insert-upstream-branch-header magit-insert-push-branch-header magit-insert-tags-header))
+
+  ;; Set line numbering to be relative
+  (setq display-line-numbers-type 'relative)
+  (global-display-line-numbers-mode -1)
+  (global-display-line-numbers-mode 1)
+  )
+
+#+end_src
+
+*** Set Default Setup (Solo)
+
+#+begin_src emacs-lisp
+
+(custom/set-solo)
+
+#+end_src
+
+* Magit
+
+#+begin_src emacs-lisp
+
+(use-package transient
+  :ensure t
+  )
+
+(use-package magit
+  :ensure t
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+  )
+
+#+end_src
+
+* Time
+
+#+begin_src emacs-lisp
+
+(defun custom/append-date-time ()
+  (interactive)
+  (evil-append 0)
+  (insert (format-time-string "%a %b %d %Y")))
+
+;; (with-eval-after-load 'general
+;;   (custom/leader-keys
+;;    "d" '(custom/append-date-time :which-key "insert current time"))
+;;   )
+
+(defun custom/insert-date-time ()
+  (interactive)
+  (evil-append 0)
+  (insert (format-time-string "%a %b %d %Y")))
+
+#+end_src
+
+* Comments
+
+#+begin_src emacs-lisp
+
+(defun custom/author ()
+  (let ((env-author (getenv "AUTHOR")))
+    (if env-author
+        env-author
+      "custom")
+    )
+  )
+(defun custom/comment-attribution ()
+  (interactive)
+  (evil-append 0)
+  (insert " - " (custom/author) ", ")
+  (custom/insert-date-time)
+  )
+
+;; (with-eval-after-load 'general
+;;   (custom/leader-keys
+;;    "c"  '(:ignore c :which-key "comment")
+;;    "c a" '(custom/comment-attribution :which-key "attribute comment"))
+;;   )
+#+end_src

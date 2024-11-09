@@ -53,3 +53,9 @@
   :ensure (:wait t :host github :repo "aaronjensen/emacs-literate-config" :protocol ssh))
 
 (literate-config-init)
+
+;;; Personal config
+(let* ((literate-config-org-file-name (expand-file-name (concat user-emacs-directory "experimental.org")))
+       (literate-config-el-file-name (expand-file-name (concat user-emacs-directory "experimental.el")))
+       )
+    (literate-config-init))
