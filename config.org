@@ -75,6 +75,23 @@ Do not allow the cursor in the minibuffer prompt.
 (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
 #+end_src
 
+** Save History
+
+#+begin_src emacs-lisp
+(use-package savehist
+  :init
+  (savehist-mode))
+#+end_src
+
+NOTE: Use this if package management section above is enabled
+
+#+begin_src emacs-lisp :tangle no
+(use-feature savehist
+  :ensure t
+  :init
+  (savehist-mode))
+#+end_src
+
 * Version Control
 
 ** Magit
