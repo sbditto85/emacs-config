@@ -31,6 +31,20 @@ directory cleaner
   :ensure (:wait t))
 #+end_src
 
+* Version Control
+
+** Magit
+
+#+begin_src emacs-lisp
+(use-package transient
+  :ensure t)
+
+(use-package magit
+  :ensure t
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+#+end_src
+
 * Startup Time
 
 Aaron had it setup to print out the start up time. I realize now that is a very

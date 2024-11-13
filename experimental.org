@@ -232,21 +232,6 @@ Modus themes are great for high contrast for easy visibility
 
 #+end_src
 
-* Magit
-
-#+begin_src emacs-lisp
-
-(use-package transient
-  :ensure t
-  )
-
-(use-package magit
-  :ensure t
-  :custom
-  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
-  )
-
-#+end_src
 
 * Time
 
