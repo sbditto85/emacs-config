@@ -1,5 +1,30 @@
 #+title: Emacs Config
 
+* DISABLED Package Management
+
+** Use Package
+
+Install packages by default when configured with use-package.
+
+NOTE: I'm going to try not using this for now, but storing it here for later as
+it will probably make the file cleaner in the long run
+
+#+begin_src emacs-lisp :tangle no
+(setq use-package-always-ensure t)
+#+end_src
+
+Macro to use to configure built-in features, rather than packages that do not
+need to be installed.
+
+#+begin_src emacs-lisp :tangle no
+(defmacro use-feature (name &rest args)
+  "`use-package' with package installation (`ensure') disabled."
+  (declare (indent defun))
+  `(use-package ,name
+     :ensure nil
+     ,@args))
+#+end_src
+
 * Base Settings
 
 ** Customization Saving
