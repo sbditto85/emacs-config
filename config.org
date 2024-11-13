@@ -92,6 +92,17 @@ NOTE: Use this if package management section above is enabled
   (savehist-mode))
 #+end_src
 
+* User Interface
+
+** Completion Menu (Vertico)
+
+#+begin_src emacs-lisp
+(use-package vertico
+  :ensure t
+  :init
+  (vertico-mode))
+#+end_src
+
 * Version Control
 
 ** Magit
