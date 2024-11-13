@@ -103,6 +103,14 @@ NOTE: Use this if package management section above is enabled
   (vertico-mode))
 #+end_src
 
+** Consult
+
+#+begin_src emacs-lisp
+(use-package consult
+  :ensure t
+  :bind (("C-x b" . consult-buffer)))
+#+end_src
+
 * Version Control
 
 ** Magit
