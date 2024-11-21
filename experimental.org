@@ -79,6 +79,7 @@ This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil
     ;; Use visual line motions even outside of visual-line-mode buffers
     (evil-global-set-key 'motion "j" 'evil-next-visual-line)
     (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+    ;; ## Consider (setq evil-respect-visual-line-mode t) - Casey, Thu Nov 21 2024
 
     (evil-set-initial-state 'messages-buffer-mode 'normal)
     (evil-set-initial-state 'dashboard-mode 'normal)
