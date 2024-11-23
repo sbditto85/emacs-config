@@ -13,6 +13,7 @@
   - [[#helpful][Helpful]]
 - [[#user-interface][User Interface]]
   - [[#color-theme][Color Theme]]
+  - [[#window-numbering][Window Numbering]]
   - [[#font-size][Font Size]]
   - [[#completion-menu-vertico][Completion Menu (Vertico)]]
   - [[#consult][Consult]]
@@ -151,6 +152,18 @@ Modus themes are great for high contrast for easy visibility
   (use-package modus-themes
     :ensure t
     :init (load-theme 'modus-operandi t))
+
+#+end_src
+
+** Window Numbering
+
+#+begin_src emacs-lisp
+
+(use-package window-numbering
+  :ensure t
+  :config
+  (window-numbering-mode 1)
+  )
 
 #+end_src
 
