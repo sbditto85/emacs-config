@@ -220,6 +220,18 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   (setq sh-basic-offset 2))
 #+end_src
 
+** Markdown
+
+#+begin_src emacs-lisp
+(use-package markdown-mode
+  :ensure t
+  :config
+  (add-hook 'markdown-mode-hook #'visual-line-mode)
+  (add-hook 'markdown-mode-hook #'visual-wrap-prefix-mode)
+
+  (setq markdown-list-indent-width 2))
+#+end_src
+
 * Version Control
 
 ** Magit
