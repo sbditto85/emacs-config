@@ -210,6 +210,16 @@ Two space indentation by default.
               smie-indent-basic 2)
 #+end_src
 
+** Shell
+
+NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
+
+#+begin_src emacs-lisp
+(use-package shell
+  :config
+  (setq sh-basic-offset 2))
+#+end_src
+
 * Version Control
 
 ** Magit
