@@ -113,6 +113,46 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 * User Interface
 
+** Font Size
+
+NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
+
+#+begin_src emacs-lisp
+(use-package emacs
+  :bind (("s-=" . #'global-text-scale-adjust)
+         ("s--" . #'global-text-scale-adjust)
+         ("s-0" . #'global-text-scale-adjust)
+         ("C-=" . #'text-scale-adjust)
+         ("C--" . #'text-scale-adjust)
+         ("C-0" . #'text-scale-adjust))
+
+  :preface
+  (defvar presentation-mode-font-size 21)
+  (defvar presentation-mode-enabled nil)
+  (defun presentation-mode ()
+    "Increase the font size for presentation."
+    (interactive)
+    ;; Is there a better way to toggle? Maybe this should actually be a "mode".
+    ;; Added due to the comment below about the old if condition taking the
+    ;; current font size and dividing by 10 and it not matching the original
+    ;; size set - Casey, Sat Nov 23 2024
+    (setq presentation-mode-enabled (not presentation-mode-enabled))
+
+    (let* ((current-font-size (/ (face-attribute 'default :height) 10))
+           (new-font-size
+            ;; Previously this was `(if (not (eq current-font-size
+            ;; presentation-mode-font-size))` but for some reason after
+            ;; assigning the font to 15 it was comming back as 14 (148 / 10),
+            ;; changed to be a boolean until I can learn how to create a mode
+            ;; properly - Casey, Sat Nov 23 2024
+            (if presentation-mode-enabled
+                presentation-mode-font-size
+              custom/monospace-font-size)))
+      (set-face-attribute 'default nil :height (* new-font-size 10))
+      (set-face-attribute 'variable-pitch nil :height (* new-font-size 10))
+      (redisplay 'force))))
+#+end_src
+
 ** Completion Menu (Vertico)
 
 #+begin_src emacs-lisp
