@@ -55,7 +55,7 @@
 (literate-config-init)
 
 ;;; Experimental personal config
-(let* ((literate-config-org-file-name (expand-file-name (concat user-emacs-directory "experimental.org")))
-       (literate-config-el-file-name (expand-file-name (concat user-emacs-directory "experimental.el")))
-       )
-    (literate-config-init))
+;; (let* ((literate-config-org-file-name (expand-file-name (concat user-emacs-directory "experimental.org")))
+;;        (literate-config-el-file-name (expand-file-name (concat user-emacs-directory "experimental.el")))
+;;        )
+;;     (literate-config-init))
