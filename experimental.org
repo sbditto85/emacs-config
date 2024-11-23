@@ -126,18 +126,6 @@ This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil
 
 * UI Configuration
 
-** Color Theme
-
-Modus themes are great for high contrast for easy visibility
-
-#+begin_src emacs-lisp
-
-  (use-package modus-themes
-    :ensure t
-    :init (load-theme 'modus-operandi t))
-
-#+end_src
-
 ** Better Modeline
 
 [[https://github.com/seagle0128/doom-modeline][doom-modeline]] is a very attractive and rich (yet still minimal) mode line configuration for Emacs.  The default configuration is quite good but you can check out the [[https://github.com/seagle0128/doom-modeline#customize][configuration options]] for more things you can enable or disable.
