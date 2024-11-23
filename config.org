@@ -1,5 +1,33 @@
 #+title: Emacs Config
 
+* Table of Contents :toc:
+- [[#disabled-package-management][DISABLED Package Management]]
+  - [[#use-package][Use Package]]
+- [[#base-settings][Base Settings]]
+  - [[#customization-saving][Customization Saving]]
+  - [[#no-littering][No Littering]]
+  - [[#minibuffer][Minibuffer]]
+  - [[#save-history][Save History]]
+- [[#assistance][Assistance]]
+  - [[#which-key][Which Key]]
+  - [[#helpful][Helpful]]
+- [[#user-interface][User Interface]]
+  - [[#font-size][Font Size]]
+  - [[#completion-menu-vertico][Completion Menu (Vertico)]]
+  - [[#consult][Consult]]
+  - [[#completion-style-orderless][Completion Style (Orderless)]]
+- [[#projects][Projects]]
+  - [[#tree-viewer-treemacs][Tree Viewer (Treemacs)]]
+- [[#file-types][File Types]]
+  - [[#defaults][Defaults]]
+  - [[#shell][Shell]]
+  - [[#markdown][Markdown]]
+- [[#programming][Programming]]
+  - [[#go-to-definition-dumb-jump][Go To Definition (Dumb Jump)]]
+- [[#version-control][Version Control]]
+  - [[#magit][Magit]]
+- [[#startup-time][Startup Time]]
+
 * DISABLED Package Management
 
 ** Use Package

@@ -1,6 +1,13 @@
 #+title: Experimental Emacs Config
 
-This Emacs configuration is for extra configuration. Things that the group may not have got to yet, but I want to experiment with anyways.
+* Table of Contents :toc:
+- [[#basic-ui-configuration][Basic UI Configuration]]
+- [[#keybinding-configuration][Keybinding Configuration]]
+  - [[#dired][Dired]]
+- [[#ui-configuration][UI Configuration]]
+  - [[#better-modeline][Better Modeline]]
+- [[#time][Time]]
+- [[#comments][Comments]]
 
 * Basic UI Configuration
 
