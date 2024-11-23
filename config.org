@@ -85,6 +85,17 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   (savehist-mode))
 #+end_src
 
+* Assistance
+
+** Which Key
+
+NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
+
+#+begin_src emacs-lisp
+(use-package which-key
+  :init
+  (which-key-mode))
+#+end_src
 
 
 * User Interface
