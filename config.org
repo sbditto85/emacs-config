@@ -28,6 +28,8 @@
   - [[#go-to-definition-dumb-jump][Go To Definition (Dumb Jump)]]
 - [[#version-control][Version Control]]
   - [[#magit][Magit]]
+- [[#ogranization][Ogranization]]
+  - [[#org-mode][Org mode]]
 - [[#startup-time][Startup Time]]
 
 * DISABLED Package Management
@@ -312,6 +314,17 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   :ensure t
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+#+end_src
+
+* Ogranization
+
+** Org mode
+
+Currently unclear how I want to setup org mode, more research is needed
+
+#+begin_src emacs-lisp :tangle no
+(use-package org-mode
+  )
 #+end_src
 
 * Startup Time
