@@ -32,6 +32,7 @@
   - [[#org-mode][Org mode]]
 - [[#presentations][Presentations]]
   - [[#org-reveal][Org Reveal]]
+- [[#terminal-vterm][Terminal (vterm)]]
 - [[#startup-time][Startup Time]]
 
 * DISABLED Package Management
@@ -335,6 +336,14 @@ Currently unclear how I want to setup org mode, more research is needed
 
 #+begin_src emacs-lisp
 (use-package ox-reveal
+  :ensure t
+  )
+#+end_src
+
+* Terminal (vterm)
+
+#+begin_src emacs-lisp
+(use-package vterm
   :ensure t
   )
 #+end_src
