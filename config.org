@@ -16,6 +16,7 @@
   - [[#color-theme][Color Theme]]
   - [[#window-numbering][Window Numbering]]
   - [[#font-size][Font Size]]
+  - [[#tab-bar][Tab Bar]]
   - [[#completion-menu-vertico][Completion Menu (Vertico)]]
   - [[#consult][Consult]]
   - [[#completion-style-orderless][Completion Style (Orderless)]]
@@ -263,6 +264,39 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
       (set-face-attribute 'default nil :height (* new-font-size 10))
       (set-face-attribute 'variable-pitch nil :height (* new-font-size 10))
       (redisplay 'force))))
+#+end_src
+
+** Tab Bar
+
+NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
+
+#+begin_src emacs-lisp
+(use-package tab-bar
+  :bind (("s-t" . #'tab-new)
+         ("s-w" . #'tab-close)
+         ("s-T" . #'tab-undo))
+
+  :config
+  (setq tab-bar-show t
+        tab-bar-new-tab-choice t
+        tab-bar-new-button nil
+        tab-bar-close-button-show nil
+        tab-bar-new-tab-to 'rightmost
+        ;; If this is the default (t) the name format function below causes
+        ;; emacs to hang on boot since commit ca3763af5cc2758ec71700029558e6ecc4379ea9
+        tab-bar-auto-width nil))
+#+end_src
+
+*** DISABLED Modern Tab Styling
+
+## I want to understand how he did the styling before I use it - Casey, Wed Nov 27 2024
+
+#+begin_src emacs-lisp :tangle no
+(use-package modern-tab-bar
+  :after tab-bar
+  :ensure (modern-tab-bar :host github :repo "aaronjensen/emacs-modern-tab-bar" :protocol ssh)
+  :init
+  (modern-tab-bar-mode))
 #+end_src
 
 ** Completion Menu (Vertico)
