@@ -29,11 +29,12 @@
   - [[#go-to-definition-dumb-jump][Go To Definition (Dumb Jump)]]
 - [[#version-control][Version Control]]
   - [[#magit][Magit]]
+- [[#terminal][Terminal]]
+  - [[#terminal-emulator-vterm][Terminal Emulator (vterm)]]
 - [[#ogranization][Ogranization]]
   - [[#org-mode][Org mode]]
 - [[#presentations][Presentations]]
   - [[#org-reveal][Org Reveal]]
-- [[#terminal-vterm][Terminal (vterm)]]
 - [[#startup-time][Startup Time]]
 
 * DISABLED Package Management
@@ -250,6 +251,7 @@ separated by spaces. For example, "som thi" will match "this-is-some-thing".
 
 #+begin_src emacs-lisp
 (use-package corfu
+  :ensure t
   :bind
   (:map corfu-map
         ("TAB" . corfu-next)
@@ -364,6 +366,20 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 #+end_src
 
+* Terminal
+
+** Terminal Emulator (vterm)
+
+#+begin_src emacs-lisp
+(use-package vterm
+  :ensure t
+  :init
+  (setq vterm-always-compile-module t
+        ;; Defaults to 0.1. Decreasing this greatly impacts performance of
+        ;; rendering large batches of text.
+        vterm-timer-delay 0.06))
+#+end_src
+
 * Ogranization
 
 ** Org mode
@@ -381,14 +397,6 @@ Currently unclear how I want to setup org mode, more research is needed
 
 #+begin_src emacs-lisp
 (use-package ox-reveal
-  :ensure t
-  )
-#+end_src
-
-* Terminal (vterm)
-
-#+begin_src emacs-lisp
-(use-package vterm
   :ensure t
   )
 #+end_src
