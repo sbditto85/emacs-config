@@ -24,6 +24,7 @@
   - [[#acting-on-completions-embark][Acting on Completions (Embark)]]
 - [[#text-editing][Text Editing]]
   - [[#spell-checking-flyspell][Spell Checking (Flyspell)]]
+  - [[#editing-search-results-wgrep][Editing Search Results (wgrep)]]
 - [[#projects][Projects]]
   - [[#tree-viewer-treemacs][Tree Viewer (Treemacs)]]
   - [[#workspaces-tabspaces][Workspaces (Tabspaces)]]
@@ -455,6 +456,15 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   :config
   (setq flyspell-issue-message-flag nil
         flyspell-issue-welcome-flag nil))
+#+end_src
+
+** Editing Search Results (wgrep)
+
+#+begin_src emacs-lisp
+(use-package wgrep
+  :ensure t
+  :config
+  (setq wgrep-auto-save-buffer t))
 #+end_src
 
 * Projects
