@@ -25,6 +25,7 @@
   - [[#spell-checking-flyspell][Spell Checking (Flyspell)]]
 - [[#projects][Projects]]
   - [[#tree-viewer-treemacs][Tree Viewer (Treemacs)]]
+  - [[#workspaces-tabspaces][Workspaces (Tabspaces)]]
 - [[#file-types][File Types]]
   - [[#defaults][Defaults]]
   - [[#shell][Shell]]
@@ -431,6 +432,38 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   :bind ("s-b" . #'treemacs)
   :config
   (treemacs-follow-mode))
+#+end_src
+
+** Workspaces (Tabspaces)
+
+#+begin_src emacs-lisp
+(use-package tabspaces
+  :ensure t
+  :after consult
+
+  :init
+  (setq tabspaces-session-file (no-littering-expand-var-file-name "tabsession.el")
+        tabspaces-project-switch-commands #'project-find-file)
+
+  (tabspaces-mode)
+
+  :config
+  (consult-customize consult--source-buffer :hidden t :default nil)
+  ;; set consult-workspace buffer list
+  (defvar consult--source-workspace
+    (list :name "Workspace Buffers"
+          :narrow ?w
+          :history 'buffer-name-history
+          :category 'buffer
+          :state #'consult--buffer-state
+          :default t
+          :items (lambda () (consult--buffer-query
+                             :predicate #'tabspaces--local-buffer-p
+                             :sort 'visibility
+                             :as #'custom/consult-buffer-name)))
+
+    "Set workspace buffer list for consult-buffer.")
+  (add-to-list 'consult-buffer-sources 'consult--source-workspace))
 #+end_src
 
 * File Types
