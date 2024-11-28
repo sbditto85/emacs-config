@@ -21,6 +21,7 @@
   - [[#consult][Consult]]
   - [[#completion-style-orderless][Completion Style (Orderless)]]
   - [[#completion-at-point][Completion at Point]]
+  - [[#acting-on-completions-embark][Acting on Completions (Embark)]]
 - [[#text-editing][Text Editing]]
   - [[#spell-checking-flyspell][Spell Checking (Flyspell)]]
 - [[#projects][Projects]]
@@ -405,6 +406,40 @@ Add =:capf= and =:compdef= to =use-package=.
 
   :init
   (defalias 'capf-dabbrev-ripgrep (cape-capf-super #'cape-dabbrev #'ripgrep-capf)))
+#+end_src
+
+** Acting on Completions (Embark)
+
+#+begin_src emacs-lisp
+(use-package embark
+  :ensure t
+  :bind (:map
+         vertico-map
+         ("C-c C-o" . #'embark-export)
+         ("C-c C-c" . #'embark-act)
+         ("C-c C-e" . #'custom/embark-export-wgrep))
+
+  :preface
+  (defvar custom/embark-export-wgrep nil)
+  (defun custom/embark-export-wgrep ()
+    "Embark export then wgrep"
+    (interactive)
+    (setq custom/embark-export-wgrep t)
+    (command-execute #'embark-export)))
+
+(use-package embark-consult
+  :ensure t
+  :config
+  (declare-function wgrep-change-to-wgrep-mode "ext:wgrep")
+
+  (defun custom/embark-export-grep-wgrep (&rest _)
+    "Start wgrep when indicated"
+    (when custom/embark-export-wgrep
+      (setq custom/embark-export-wgrep nil)
+      (when (eq major-mode 'grep-mode)
+        (wgrep-change-to-wgrep-mode))))
+
+  (advice-add #'embark-consult-export-grep :after #'custom/embark-export-grep-wgrep))
 #+end_src
 
 * Text Editing
