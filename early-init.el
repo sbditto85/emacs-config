@@ -7,6 +7,8 @@
 (setq custom/monospace-font "JetBrains Mono NL"
       custom/monospace-font-size 15)
 
+(setq frame-inhibit-implied-resize t)
+
 ;; Configure default frame settings before the first frame is shown
 (setq default-frame-alist
       (append
