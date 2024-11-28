@@ -25,6 +25,7 @@
   - [[#defaults][Defaults]]
   - [[#shell][Shell]]
   - [[#markdown][Markdown]]
+  - [[#ruby][Ruby]]
 - [[#programming][Programming]]
   - [[#go-to-definition-dumb-jump][Go To Definition (Dumb Jump)]]
 - [[#version-control][Version Control]]
@@ -336,6 +337,20 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   (add-hook 'markdown-mode-hook #'visual-wrap-prefix-mode)
 
   (setq markdown-list-indent-width 2))
+#+end_src
+
+** Ruby
+
+NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
+
+#+begin_src emacs-lisp
+(use-package ruby-mode
+  :config
+  (setq ruby-block-indent nil
+        ruby-method-call-indent nil
+        ruby-method-params-indent nil
+        ruby-after-operator-indent nil
+        ruby-bracketed-args-indent nil))
 #+end_src
 
 * Programming
