@@ -3,7 +3,6 @@
 * Table of Contents :toc:
 - [[#keybinding-configuration][Keybinding Configuration]]
   - [[#dired][Dired]]
-- [[#comments][Comments]]
 
 * Keybinding Configuration
 
@@ -93,27 +92,3 @@ This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil
 
 #+end_src
 
-* Comments
-
-#+begin_src emacs-lisp
-
-(defun custom/author ()
-  (let ((env-author (getenv "AUTHOR")))
-    (if env-author
-        env-author
-      "custom")
-    )
-  )
-(defun custom/comment-attribution ()
-  (interactive)
-  (evil-append 0)
-  (insert " - " (custom/author) ", ")
-  (custom/insert-date-time)
-  )
-
-;; (with-eval-after-load 'general
-;;   (custom/leader-keys
-;;    "c"  '(:ignore c :which-key "comment")
-;;    "c a" '(custom/comment-attribution :which-key "attribute comment"))
-;;   )
-#+end_src

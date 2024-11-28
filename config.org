@@ -37,6 +37,7 @@
 - [[#programming][Programming]]
   - [[#go-to-definition-dumb-jump][Go To Definition (Dumb Jump)]]
   - [[#inserting-time][Inserting Time]]
+  - [[#comments][Comments]]
 - [[#version-control][Version Control]]
   - [[#magit][Magit]]
 - [[#terminal][Terminal]]
@@ -619,6 +620,32 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 ;;    "d" '(custom/insert-date-time :which-key "insert current time"))
 ;;   )
 
+#+end_src
+
+** Comments
+
+#+begin_src emacs-lisp
+
+(defun custom/author ()
+  (let ((env-author (getenv "AUTHOR")))
+    (if env-author
+        env-author
+      "custom")
+    )
+  )
+(defun custom/comment-attribution ()
+  (interactive)
+  ;; ## Enable once `evil-mode` is installed - Casey, Wed Nov 27 2024
+  ;; (evil-append 0)
+  (insert " - " (custom/author) ", ")
+  (custom/insert-date-time)
+  )
+
+;; ## Enable once `general` is installed, consider if this is the most
+;; ## appropriate way to add to the leader keys - Casey, Wed Nov 27 2024
+;; (with-eval-after-load 'general (custom/leader-keys "c" '(:ignore c :which-key
+;; "comment") "c a" '(custom/comment-attribution :which-key "attribute
+;; comment")) )
 #+end_src
 
 * Version Control
