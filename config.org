@@ -20,6 +20,8 @@
   - [[#consult][Consult]]
   - [[#completion-style-orderless][Completion Style (Orderless)]]
   - [[#completion-at-point][Completion at Point]]
+- [[#text-editing][Text Editing]]
+  - [[#spell-checking-flyspell][Spell Checking (Flyspell)]]
 - [[#projects][Projects]]
   - [[#tree-viewer-treemacs][Tree Viewer (Treemacs)]]
 - [[#file-types][File Types]]
@@ -368,6 +370,21 @@ Add =:capf= and =:compdef= to =use-package=.
 
   :init
   (defalias 'capf-dabbrev-ripgrep (cape-capf-super #'cape-dabbrev #'ripgrep-capf)))
+#+end_src
+
+* Text Editing
+
+** Spell Checking (Flyspell)
+
+NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
+
+#+begin_src emacs-lisp
+(use-package flyspell
+  :hook ((org-mode git-commit-mode markdown-mode) . flyspell-mode)
+
+  :config
+  (setq flyspell-issue-message-flag nil
+        flyspell-issue-welcome-flag nil))
 #+end_src
 
 * Projects
