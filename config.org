@@ -561,6 +561,14 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
         vterm-timer-delay 0.06))
 #+end_src
 
+*** Toggle
+
+#+begin_src emacs-lisp
+(use-package vterm-toggle
+  :ensure t
+  :bind (("s-i" . vterm-toggle)))
+#+end_src
+
 * Ogranization
 
 ** Org mode
