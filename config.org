@@ -36,6 +36,7 @@
   - [[#ruby][Ruby]]
 - [[#programming][Programming]]
   - [[#go-to-definition-dumb-jump][Go To Definition (Dumb Jump)]]
+  - [[#inserting-time][Inserting Time]]
 - [[#version-control][Version Control]]
   - [[#magit][Magit]]
 - [[#terminal][Terminal]]
@@ -599,6 +600,25 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   (setq xref-show-definitions-function #'xref-show-definitions-completing-read)
 
   (setq dumb-jump-force-searcher 'rg))
+#+end_src
+
+** Inserting Time
+
+#+begin_src emacs-lisp
+
+(defun custom/insert-date-time ()
+  (interactive)
+  ;; ## Enable once `evil-mode` is installed - Casey, Wed Nov 27 2024
+  ;; (evil-append 0)
+  (insert (format-time-string "%a %b %d %Y")))
+
+;; ## Enable once `general` is installed, consider if this is the most
+;; ## appropriate way to add to the leader keys - Casey, Wed Nov 27 2024
+;; (with-eval-after-load 'general
+;;   (custom/leader-keys
+;;    "d" '(custom/insert-date-time :which-key "insert current time"))
+;;   )
+
 #+end_src
 
 * Version Control

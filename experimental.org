@@ -3,7 +3,6 @@
 * Table of Contents :toc:
 - [[#keybinding-configuration][Keybinding Configuration]]
   - [[#dired][Dired]]
-- [[#time][Time]]
 - [[#comments][Comments]]
 
 * Keybinding Configuration
@@ -91,27 +90,6 @@ This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil
     (kbd "l") 'dired-find-file
     )
   )
-
-#+end_src
-
-* Time
-
-#+begin_src emacs-lisp
-
-(defun custom/append-date-time ()
-  (interactive)
-  (evil-append 0)
-  (insert (format-time-string "%a %b %d %Y")))
-
-;; (with-eval-after-load 'general
-;;   (custom/leader-keys
-;;    "d" '(custom/append-date-time :which-key "insert current time"))
-;;   )
-
-(defun custom/insert-date-time ()
-  (interactive)
-  (evil-append 0)
-  (insert (format-time-string "%a %b %d %Y")))
 
 #+end_src
 
