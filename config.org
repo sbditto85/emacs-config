@@ -511,23 +511,27 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
   (tabspaces-mode)
 
-  :config
-  (consult-customize consult--source-buffer :hidden t :default nil)
-  ;; set consult-workspace buffer list
-  (defvar consult--source-workspace
-    (list :name "Workspace Buffers"
-          :narrow ?w
-          :history 'buffer-name-history
-          :category 'buffer
-          :state #'consult--buffer-state
-          :default t
-          :items (lambda () (consult--buffer-query
-                             :predicate #'tabspaces--local-buffer-p
-                             :sort 'visibility
-                             :as #'custom/consult-buffer-name)))
+  ;; ## custom/consult-buffer-name is not set, it was c/cusult-buffer-name in
+  ;; ## Aaron's config, but I don't see where it is set their either
+  ;; ## - Casey, Wed Nov 27 2024
+  ;; :config
+  ;; (consult-customize consult--source-buffer :hidden t :default nil)
+  ;; ;; set consult-workspace buffer list
+  ;; (defvar consult--source-workspace
+  ;;   (list :name "Workspace Buffers"
+  ;;         :narrow ?w
+  ;;         :history 'buffer-name-history
+  ;;         :category 'buffer
+  ;;         :state #'consult--buffer-state
+  ;;         :default t
+  ;;         :items (lambda () (consult--buffer-query
+  ;;                            :predicate #'tabspaces--local-buffer-p
+  ;;                            :sort 'visibility
+  ;;                            :as #'custom/consult-buffer-name)))
 
-    "Set workspace buffer list for consult-buffer.")
-  (add-to-list 'consult-buffer-sources 'consult--source-workspace))
+  ;;   "Set workspace buffer list for consult-buffer.")
+  ;; (add-to-list 'consult-buffer-sources 'consult--source-workspace))
+  )
 #+end_src
 
 * File Types
