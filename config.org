@@ -62,19 +62,23 @@ NOTE: I'm going to try not using this for now, but storing it here for later as
 it will probably make the file cleaner in the long run
 
 #+begin_src emacs-lisp :tangle no
+
 (setq use-package-always-ensure t)
+
 #+end_src
 
 Macro to use to configure built-in features, rather than packages that do not
 need to be installed.
 
 #+begin_src emacs-lisp :tangle no
+
 (defmacro use-feature (name &rest args)
   "`use-package' with package installation (`ensure') disabled."
   (declare (indent defun))
   `(use-package ,name
      :ensure nil
      ,@args))
+
 #+end_src
 
 * Base Settings
@@ -90,9 +94,11 @@ configuring Emacs myself, rather than relying on a UI. This will give me
 confidence in full control of Emacs and how to properly do that.
 
 #+begin_src emacs-lisp
+
 (setq custom-file (expand-file-name
                    (format "custom-%d-%d.el" (emacs-pid) (random))
                    temporary-file-directory))
+
 #+end_src
 
 ** No Littering
@@ -104,8 +110,10 @@ This was also highly recommended by =emacs from scratch= as it keeps your
 directory cleaner
 
 #+begin_src emacs-lisp
+
 (use-package no-littering
   :ensure (:wait t))
+
 #+end_src
 
 ** Minibuffer
@@ -115,16 +123,20 @@ Support opening new minibuffers from inside existing minibuffers.
 NOTE: Not sure if I'll like this, disabling for now
 
 #+begin_src emacs-lisp :tangle no
+
 (setq enable-recursive-minibuffers t)
+
 #+end_src
 
 Do not allow the cursor in the minibuffer prompt.
 
 #+begin_src emacs-lisp
+
 (setq minibuffer-prompt-properties
       '(read-only t cursor-intangible t face minibuffer-prompt))
 
 (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
 #+end_src
 
 ** Save History
@@ -132,9 +144,11 @@ Do not allow the cursor in the minibuffer prompt.
 NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
 
 #+begin_src emacs-lisp
+
 (use-package savehist
   :init
   (savehist-mode))
+
 #+end_src
 
 ** Backup and Auto-Save
@@ -143,12 +157,14 @@ Put backup files and auto-save files in var directory, rather than alongside the
 original files.
 
 #+begin_src emacs-lisp
+
 (setq backup-directory-alist `(("." . ,(no-littering-expand-var-file-name "backup/"))))
 
 (add-hook 'elpaca-after-init-hook
           (lambda ()
             (setq auto-save-list-file-prefix (no-littering-expand-var-file-name "auto-save/sessions/")
                   auto-save-file-name-transforms `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))))
+
 #+end_src
 
 When paths are too long, there can be errors when auto-save and backup filenames
@@ -156,6 +172,7 @@ are generated. This uses a consistent hash, rather than the full path to
 generate the filenames. This is taken from Doom Emacs.
 
 #+begin_src emacs-lisp
+
 (defun custom/make-auto-save-file-name-hashed (fn)
   "Compress the auto-save file name so paths don't get too long."
   (let ((buffer-file-name
@@ -182,6 +199,7 @@ generate the filenames. This is taken from Doom Emacs.
         (expand-file-name (sha1 (file-name-nondirectory file))
                           (file-name-directory file))))))
 (advice-add #'make-backup-file-name-1 :around #'custom/make-backup-file-name-hashed)
+
 #+end_src
 
 * Assistance
@@ -191,14 +209,17 @@ generate the filenames. This is taken from Doom Emacs.
 NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
 
 #+begin_src emacs-lisp
+
 (use-package which-key
   :init
   (which-key-mode))
+
 #+end_src
 
 ** Helpful
 
 #+begin_src emacs-lisp
+
 (use-package helpful
   :ensure t
   :bind (
@@ -208,6 +229,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
          ([remap describe-variable] . #'helpful-variable)
          ([remap describe-symbol] . #'helpful-symbol)
          ([remap describe-key] . #'helpful-key)))
+
 #+end_src
 
 * User Interface
@@ -231,8 +253,7 @@ Modus themes are great for high contrast for easy visibility
 (use-package window-numbering
   :ensure t
   :config
-  (window-numbering-mode 1)
-  )
+  (window-numbering-mode 1))
 
 #+end_src
 
@@ -241,6 +262,7 @@ Modus themes are great for high contrast for easy visibility
 NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
 
 #+begin_src emacs-lisp
+
 (use-package emacs
   :bind (("s-=" . #'global-text-scale-adjust)
          ("s--" . #'global-text-scale-adjust)
@@ -274,6 +296,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
       (set-face-attribute 'default nil :height (* new-font-size 10))
       (set-face-attribute 'variable-pitch nil :height (* new-font-size 10))
       (redisplay 'force))))
+
 #+end_src
 
 ** Tab Bar
@@ -281,6 +304,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
 
 #+begin_src emacs-lisp
+
 (use-package tab-bar
   :bind (("s-t" . #'tab-new)
          ("s-w" . #'tab-close)
@@ -295,6 +319,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
         ;; If this is the default (t) the name format function below causes
         ;; emacs to hang on boot since commit ca3763af5cc2758ec71700029558e6ecc4379ea9
         tab-bar-auto-width nil))
+
 #+end_src
 
 *** DISABLED Modern Tab Styling
@@ -302,28 +327,34 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 ## I want to understand how he did the styling before I use it - Casey, Wed Nov 27 2024
 
 #+begin_src emacs-lisp :tangle no
+
 (use-package modern-tab-bar
   :after tab-bar
   :ensure (modern-tab-bar :host github :repo "aaronjensen/emacs-modern-tab-bar" :protocol ssh)
   :init
   (modern-tab-bar-mode))
+
 #+end_src
 
 ** Completion Menu (Vertico)
 
 #+begin_src emacs-lisp
+
 (use-package vertico
   :ensure t
   :init
   (vertico-mode))
+
 #+end_src
 
 ** Consult
 
 #+begin_src emacs-lisp
+
 (use-package consult
   :ensure t
   :bind (("C-x b" . consult-buffer)))
+
 #+end_src
 
 ** Completion Style (Orderless)
@@ -332,12 +363,14 @@ The orderless completion style allows typing parts of what is being matched,
 separated by spaces. For example, "som thi" will match "this-is-some-thing".
 
 #+begin_src emacs-lisp
+
 (use-package orderless
   :ensure t
   :init
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion)))))
+
 #+end_src
 
 ** Completion at Point
@@ -347,13 +380,16 @@ separated by spaces. For example, "som thi" will match "this-is-some-thing".
 Add =:capf= and =:compdef= to =use-package=.
 
 #+begin_src emacs-lisp
+
 (use-package compdef
   :ensure (:wait t))
+
 #+end_src
 
 *** Inline Completion (Corfu)
 
 #+begin_src emacs-lisp
+
 (use-package corfu
   :ensure t
   :bind
@@ -392,15 +428,18 @@ Add =:capf= and =:compdef= to =use-package=.
 
   :config
   (corfu-history-mode))
+
 #+end_src
 
 *** Additional Completion-at-Point Functions (cape)
 
 #+begin_src emacs-lisp
+
 (use-package cape
   :ensure t
   :config
   (setq cape-dabbrev-check-other-buffers nil))
+
 #+end_src
 
 *** DISABLED Ripgrep Completion-at-Point Function
@@ -408,25 +447,28 @@ Add =:capf= and =:compdef= to =use-package=.
 ## I want to understand what the package he created does before I use it - Casey, Wed Nov 27 2024
 
 #+begin_src emacs-lisp :tangle no
+
 (use-package ripgrep-capf
   :after cape
   :ensure (:host github :repo "aaronjensen/ripgrep-capf" :protocol ssh)
 
   :init
   (defalias 'capf-dabbrev-ripgrep (cape-capf-super #'cape-dabbrev #'ripgrep-capf)))
+
 #+end_src
 
 ** Acting on Completions (Embark)
 
 #+begin_src emacs-lisp
+
 (use-package embark
   :ensure t
-  :bind (:map
-         vertico-map
-         ("C-c C-o" . #'embark-export)
-         ("C-c C-c" . #'embark-act)
-         ("C-c C-e" . #'custom/embark-export-wgrep))
-
+  :bind
+  (:map
+    vertico-map
+    ("C-c C-o" . #'embark-export)
+    ("C-c C-c" . #'embark-act)
+    ("C-c C-e" . #'custom/embark-export-wgrep))
   :preface
   (defvar custom/embark-export-wgrep nil)
   (defun custom/embark-export-wgrep ()
@@ -448,6 +490,7 @@ Add =:capf= and =:compdef= to =use-package=.
         (wgrep-change-to-wgrep-mode))))
 
   (advice-add #'embark-consult-export-grep :after #'custom/embark-export-grep-wgrep))
+
 #+end_src
 
 ** Modeline (doom-modeline)
@@ -528,23 +571,20 @@ The default configuration is quite good but you can check out the [[https://gith
     ;; ## Consider (setq evil-respect-visual-line-mode t) - Casey, Thu Nov 21 2024
 
     (evil-set-initial-state 'messages-buffer-mode 'normal)
-    (evil-set-initial-state 'dashboard-mode 'normal)
-    )
+    (evil-set-initial-state 'dashboard-mode 'normal))
 
   (use-package evil-collection
     :ensure t
     :after evil
     :config
-    (evil-collection-init)
-    )
+    (evil-collection-init))
 
   (use-package evil-escape
     :ensure t
     :after evil
     :config
     (evil-escape-mode)
-    (setq-default evil-escape-key-sequence "jk")
-    )
+    (setq-default evil-escape-key-sequence "jk"))
 
 #+end_src
 
@@ -570,21 +610,25 @@ The default configuration is quite good but you can check out the [[https://gith
 NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
 
 #+begin_src emacs-lisp
+
 (use-package flyspell
   :hook ((org-mode git-commit-mode markdown-mode) . flyspell-mode)
 
   :config
   (setq flyspell-issue-message-flag nil
         flyspell-issue-welcome-flag nil))
+
 #+end_src
 
 ** Editing Search Results (wgrep)
 
 #+begin_src emacs-lisp
+
 (use-package wgrep
   :ensure t
   :config
   (setq wgrep-auto-save-buffer t))
+
 #+end_src
 
 * Projects
@@ -592,16 +636,19 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 ** Tree Viewer (Treemacs)
 
 #+begin_src emacs-lisp
+
 (use-package treemacs
   :ensure t
   :bind ("s-b" . #'treemacs)
   :config
   (treemacs-follow-mode))
+
 #+end_src
 
 ** Workspaces (Tabspaces)
 
 #+begin_src emacs-lisp
+
 (use-package tabspaces
   :ensure t
   :after consult
@@ -633,6 +680,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   ;;   "Set workspace buffer list for consult-buffer.")
   ;; (add-to-list 'consult-buffer-sources 'consult--source-workspace))
   )
+
 #+end_src
 
 * File Types
@@ -644,9 +692,11 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 Two space indentation by default.
 
 #+begin_src emacs-lisp
+
 (setq-default indent-tabs-mode nil
               tab-width 2
               smie-indent-basic 2)
+
 #+end_src
 
 ** Shell
@@ -654,14 +704,17 @@ Two space indentation by default.
 NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
 
 #+begin_src emacs-lisp
+
 (use-package shell
   :config
   (setq sh-basic-offset 2))
+
 #+end_src
 
 ** Markdown
 
 #+begin_src emacs-lisp
+
 (use-package markdown-mode
   :ensure t
   :config
@@ -669,6 +722,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   (add-hook 'markdown-mode-hook #'visual-wrap-prefix-mode)
 
   (setq markdown-list-indent-width 2))
+
 #+end_src
 
 ** Ruby
@@ -676,6 +730,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
 
 #+begin_src emacs-lisp
+
 (use-package ruby-mode
   :hook (ruby-mode . corfu-mode)
   ;; ## Enable this if Ripgrep capf is enabled above - Casey, Wed Nov 27 2024
@@ -686,6 +741,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
         ruby-method-params-indent nil
         ruby-after-operator-indent nil
         ruby-bracketed-args-indent nil))
+
 #+end_src
 
 * Programming
@@ -693,6 +749,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 ** Go To Definition (Dumb Jump)
 
 #+begin_src emacs-lisp
+
 (use-package dumb-jump
   :ensure t
   :init
@@ -700,6 +757,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   (setq xref-show-definitions-function #'xref-show-definitions-completing-read)
 
   (setq dumb-jump-force-searcher 'rg))
+
 #+end_src
 
 ** Inserting Time
@@ -723,15 +781,14 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
     (if env-author
         env-author
       "custom")
-    )
-  )
+    ))
+
 (defun custom/comment-attribution ()
   (interactive)
   ;; ## Enable once `evil-mode` is installed - Casey, Wed Nov 27 2024
   ;; (evil-append 0)
   (insert " - " (custom/author) ", ")
-  (custom/insert-date-time)
-  )
+  (custom/insert-date-time))
 
 #+end_src
 
@@ -740,6 +797,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 ** Magit
 
 #+begin_src emacs-lisp
+
 (use-package transient
   :ensure t)
 
@@ -747,6 +805,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   :ensure t
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
 #+end_src
 
 * Terminal
@@ -754,6 +813,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 ** Terminal Emulator (vterm)
 
 #+begin_src emacs-lisp
+
 (use-package vterm
   :ensure t
   :init
@@ -761,14 +821,17 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
         ;; Defaults to 0.1. Decreasing this greatly impacts performance of
         ;; rendering large batches of text.
         vterm-timer-delay 0.06))
+
 #+end_src
 
 *** Toggle
 
 #+begin_src emacs-lisp
+
 (use-package vterm-toggle
   :ensure t
   :bind (("s-i" . vterm-toggle)))
+
 #+end_src
 
 * Ogranization
@@ -778,8 +841,9 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 Currently unclear how I want to setup org mode, more research is needed
 
 #+begin_src emacs-lisp :tangle no
-(use-package org-mode
-  )
+
+(use-package org-mode)
+
 #+end_src
 
 * Presentations
@@ -787,9 +851,10 @@ Currently unclear how I want to setup org mode, more research is needed
 ** Org Reveal
 
 #+begin_src emacs-lisp
+
 (use-package ox-reveal
-  :ensure t
-  )
+  :ensure t)
+
 #+end_src
 
 * Startup Time
@@ -803,10 +868,12 @@ rather than blowing past them.
 Changed this from using a web hook:
 
 #+begin_src emacs-lisp :tangle no
+
 (add-hook 'after-init-hook
           (lambda ()
             (let ((inhibit-message t))
               (message "Emacs init time: %s" (emacs-init-time)))))
+
 #+end_src
 
 to setting the function =startup-echo-area-message= as that is the message that
@@ -814,6 +881,8 @@ Emacs will show at the bottom of the screen at startup and the default one is
 very difficult to ignore
 
 #+begin_src emacs-lisp
+
 (defun startup-echo-area-message ()
   (format "Emacs init time: %s" (emacs-init-time)))
+
 #+end_src
