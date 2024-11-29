@@ -23,6 +23,10 @@
   - [[#completion-at-point][Completion at Point]]
   - [[#acting-on-completions-embark][Acting on Completions (Embark)]]
   - [[#modeline-doom-modeline][Modeline (doom-modeline)]]
+- [[#keybinding-configuration][Keybinding Configuration]]
+  - [[#leader-key-general][Leader key (general)]]
+  - [[#modular-editing-evil][Modular editing (evil)]]
+  - [[#dired][Dired]]
 - [[#text-editing][Text Editing]]
   - [[#spell-checking-flyspell][Spell Checking (Flyspell)]]
   - [[#editing-search-results-wgrep][Editing Search Results (wgrep)]]
@@ -464,6 +468,101 @@ The default configuration is quite good but you can check out the [[https://gith
 
 #+end_src
 
+* Keybinding Configuration
+
+** Leader key (general)
+
+#+begin_src emacs-lisp
+
+  (use-package general
+    :ensure t
+    :after evil
+    :config
+    (general-create-definer custom/leader-keys
+      :keymaps '(normal insert visual emacs)
+      :prefix "SPC"
+      :global-prefix "C-SPC")
+
+    ;; ## Not sure how I want to configure things - Casey, Fri Nov 29 2024
+    ;; (custom/leader-keys
+    ;;   "c" '(:ignore c :which-key "comment")
+    ;;   "c a" '(custom/comment-attribution :which-key "attribute comment")) )
+
+    ;;   "d" '(custom/insert-date-time :which-key "insert current time"))
+
+    ;;   "o ec" '(lambda () (interactive) (find-file (expand-file-name "~/.config/emacs/config.org")))
+
+    ;;   "p"  '(:ignore p :which-key "project")
+    ;;   "pp" '(projectile-persp-switch-project :which-key "Switch Project")
+    ;;   "pk" '(perspective-tabs-close-tab :which-key "Close Project")
+
+    ;;   "q"  '(:ignore q :which-key "quit/session")
+    ;;   "qq" '(save-buffers-kill-terminal :which-key "Save and Close Emacs")
+
+    ;;   "t"  '(:ignore t :which-key "toggles")
+    ;;   )
+    )
+
+#+end_src
+
+** Modular editing (evil)
+
+#+begin_src emacs-lisp
+
+  (use-package evil
+    :ensure t
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-keybinding nil)
+    (setq evil-want-C-u-scroll t)
+    (setq evil-want-C-i-jump nil)
+    :config
+    (evil-mode 1)
+    (keymap-set evil-insert-state-map "C-g" 'evil-normal-state)
+    (keymap-set evil-insert-state-map "C-j" 'evil-next-line)
+    (keymap-set evil-insert-state-map "C-k" 'evil-previous-line)
+
+    ;; Use visual line motions even outside of visual-line-mode buffers
+    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+    ;; ## Consider (setq evil-respect-visual-line-mode t) - Casey, Thu Nov 21 2024
+
+    (evil-set-initial-state 'messages-buffer-mode 'normal)
+    (evil-set-initial-state 'dashboard-mode 'normal)
+    )
+
+  (use-package evil-collection
+    :ensure t
+    :after evil
+    :config
+    (evil-collection-init)
+    )
+
+  (use-package evil-escape
+    :ensure t
+    :after evil
+    :config
+    (evil-escape-mode)
+    (setq-default evil-escape-key-sequence "jk")
+    )
+
+#+end_src
+
+** Dired
+
+#+begin_src emacs-lisp
+
+(use-package dired
+  :after evil
+  :config
+  (evil-define-key 'normal dired-mode-map
+    (kbd "h") 'dired-up-directory
+    (kbd "l") 'dired-find-file
+    )
+  )
+
+#+end_src
+
 * Text Editing
 
 ** Spell Checking (Flyspell)
@@ -613,13 +712,6 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   ;; (evil-append 0)
   (insert (format-time-string "%a %b %d %Y")))
 
-;; ## Enable once `general` is installed, consider if this is the most
-;; ## appropriate way to add to the leader keys - Casey, Wed Nov 27 2024
-;; (with-eval-after-load 'general
-;;   (custom/leader-keys
-;;    "d" '(custom/insert-date-time :which-key "insert current time"))
-;;   )
-
 #+end_src
 
 ** Comments
@@ -641,11 +733,6 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   (custom/insert-date-time)
   )
 
-;; ## Enable once `general` is installed, consider if this is the most
-;; ## appropriate way to add to the leader keys - Casey, Wed Nov 27 2024
-;; (with-eval-after-load 'general (custom/leader-keys "c" '(:ignore c :which-key
-;; "comment") "c a" '(custom/comment-attribution :which-key "attribute
-;; comment")) )
 #+end_src
 
 * Version Control
