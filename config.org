@@ -699,6 +699,13 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   :ensure t)
 #+end_src
 
+** YAML
+
+#+begin_src emacs-lisp
+(use-package yaml-mode
+  :ensure t)
+#+end_src
+
 * Programming
 
 ** Go To Definition (Dumb Jump)
