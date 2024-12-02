@@ -692,6 +692,13 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+end_src
 
+** Haskell
+
+#+begin_src emacs-lisp
+(use-package haskell-mode
+  :ensure t)
+#+end_src
+
 * Programming
 
 ** Go To Definition (Dumb Jump)
