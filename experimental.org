@@ -3,6 +3,7 @@
 * Table of Contents :toc:
 - [[#snippets][Snippets]]
   - [[#commit-message-for-package-version-increase][Commit message for package version increase]]
+- [[#insert-date][Insert date]]
 * Snippets
 
 ** Commit message for package version increase
@@ -21,5 +22,18 @@ ${1:`(if-let* ((files (shell-command-to-string "git diff --cached --name-only | 
     (concat (capitalize dir) " package")
   "Package")`} version is increased from ${2:`(shell-command-to-string "git diff --cached --word-diff | sed -n -E 's/^.*version.*\\[-\"([[:digit:]\\.]+)\".*/\\1/p' | tr -d '\\n'")`} to ${3:`(shell-command-to-string "git diff --cached --word-diff | sed -n -E -e 's/^.*version.*\\{\\+\"([[:digit:]\\.]+)\".*/\\1/p' | tr -d '\\n'")`}
 
+#+end_src
+
+* Insert date
+
+From Aaron
+
+#+begin_src emacs-lisp :tangle no
+(defun c/insert-log-date ()
+  "Insert a date in my typical log format.
+
+e.g. Fri Jan 07 2022"
+  (interactive)
+  (insert (format-time-string "%a %b %-d %Y")))
 #+end_src
 
