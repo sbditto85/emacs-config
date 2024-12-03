@@ -4,6 +4,8 @@
 - [[#snippets][Snippets]]
   - [[#commit-message-for-package-version-increase][Commit message for package version increase]]
 - [[#insert-date][Insert date]]
+- [[#comment-attribution][Comment attribution]]
+
 * Snippets
 
 ** Commit message for package version increase
@@ -37,3 +39,21 @@ e.g. Fri Jan 07 2022"
   (insert (format-time-string "%a %b %-d %Y")))
 #+end_src
 
+* Comment attribution
+
+From Aaron
+
+#+begin_src emacs-lisp :tangle no
+(defun c/insert-comment-attribution ()
+  "Insert a comment attribution.
+
+e.g. - Aaron, Fri Jan 07 2022"
+  (interactive)
+  (insert "- Aaron")
+  (save-excursion
+    (insert ", ")
+    (c/insert-log-date)))
+
+(define-key global-map (kbd "C-c !") #'c/insert-log-date)
+(define-key global-map (kbd "C-c C--") #'c/insert-comment-attribution)
+#+end_src

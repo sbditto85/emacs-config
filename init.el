@@ -1,5 +1,13 @@
 ;;; init.el -*- lexical-binding: t; -*-
 
+;; ## Explicitly set PATH environment variable and update exec-path to match it.
+;; ## (the string here should be copied from the PATH in Emacs.app/Contents/Info.plist)
+;; ## See https://github.com/d12frosted/homebrew-emacs-plus/issues/733
+;; ## - Casey, Thu Oct 31 2024
+(setenv "PATH" "/Users/c019455/.asdf/shims:/opt/homebrew/opt/asdf/libexec/bin:/usr/local/sbin:/Users/c019455/.emacs.d/bin:/usr/local/sbin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/TeX/texbin:/Users/c019455/wsgr/selenium:/Users/c019455/wsgr/scripts:/Users/c019455/wsgr/selenium:/Users/c019455/wsgr/scripts
+")
+(setq exec-path (split-string (getenv "PATH") path-separator))
+
 ;; Install Elpaca
 (defvar elpaca-installer-version 0.8)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
