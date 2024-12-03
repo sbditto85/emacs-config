@@ -1,12 +1,13 @@
 #+title: Experimental Emacs Config
 
 * Table of Contents :toc:
-- [[#snippets][Snippets]]
+- [[#snippets-yasnippet][Snippets (yasnippet)]]
   - [[#commit-message-for-package-version-increase][Commit message for package version increase]]
-- [[#insert-date][Insert date]]
+  - [[#insert-date][Insert date]]
+- [[#insert-date-1][Insert date]]
 - [[#comment-attribution][Comment attribution]]
 
-* Snippets
+* Snippets (yasnippet)
 
 ** Commit message for package version increase
 
@@ -26,17 +27,32 @@ ${1:`(if-let* ((files (shell-command-to-string "git diff --cached --name-only | 
 
 #+end_src
 
+** Insert date
+
+From Spencer
+
+#+begin_src emacs-lisp :tangle no
+
+# name: Date stamp
+# key: nd
+# --
+`(format-time-string "%a %b %d %Y")`
+
+#+end_src
+
 * Insert date
 
 From Aaron
 
 #+begin_src emacs-lisp :tangle no
+
 (defun c/insert-log-date ()
   "Insert a date in my typical log format.
 
 e.g. Fri Jan 07 2022"
   (interactive)
   (insert (format-time-string "%a %b %-d %Y")))
+
 #+end_src
 
 * Comment attribution
@@ -44,6 +60,7 @@ e.g. Fri Jan 07 2022"
 From Aaron
 
 #+begin_src emacs-lisp :tangle no
+
 (defun c/insert-comment-attribution ()
   "Insert a comment attribution.
 
@@ -56,4 +73,5 @@ e.g. - Aaron, Fri Jan 07 2022"
 
 (define-key global-map (kbd "C-c !") #'c/insert-log-date)
 (define-key global-map (kbd "C-c C--") #'c/insert-comment-attribution)
+
 #+end_src
