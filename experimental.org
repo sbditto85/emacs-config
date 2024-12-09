@@ -6,6 +6,7 @@
   - [[#insert-date][Insert date]]
 - [[#insert-date-1][Insert date]]
 - [[#comment-attribution][Comment attribution]]
+- [[#timing][Timing]]
 
 * Snippets (yasnippet)
 
@@ -74,4 +75,71 @@ e.g. - Aaron, Fri Jan 07 2022"
 (define-key global-map (kbd "C-c !") #'c/insert-log-date)
 (define-key global-map (kbd "C-c C--") #'c/insert-comment-attribution)
 
+#+end_src
+
+* Timing
+Aaron provided his code.
+
+In early init:
+
+#+begin_src emacs-lisp :tangle no
+(defvar c/early-init-el-start-time (current-time) "Time when early-init.el was started")
+(defvar c/section-split-time c/early-init-el-start-time)
+
+(defun c/get-section-split-time ()
+  "Return the time since the init or since the last time this was called."
+  (let ((now (current-time)))
+    (prog1
+        (float-time (time-subtract now c/section-split-time))
+      (setq c/section-split-time now))))
+
+(defvar c/previous-section nil)
+
+(defun c/start-section (file heading)
+  "Print the split time for the previous heading."
+  (when (and c/previous-section
+             (not noninteractive))
+    (let ((inhibit-message t)
+          (time (* 1000 (c/get-section-split-time))))
+      (when (> time 3)
+        (message "%6s • %4dms • %s" (car c/previous-section) time (cdr c/previous-section)))))
+  (setq c/previous-section (and file heading (cons file heading))))
+#+end_src
+
+In init:
+
+#+begin_src emacs-lisp :tangle no
+;;; init.el -*- lexical-binding: t; -*-
+
+(c/start-section "init" "Start")
+
+(defvar c/init-el-start-time (current-time) "Time when init.el was started")
+
+(c/start-section "init" "elpaca")
+
+;; ELPACA SETUP
+
+(elpaca (literate-config :host github :repo "aaronjensen/emacs-literate-config" :protocol ssh :wait t))
+
+(add-hook 'literate-config-before-section-hook
+          (lambda (section)
+            (c/start-section "config" section)))
+
+(unless noninteractive
+  (add-hook 'elpaca-after-init-hook
+            (lambda ()
+              (let ((inhibit-message t))
+                (message "early-init.el: %d ms, init.el: %d ms, config.el: %d ms, post: %d ms\nInitial: %d ms, Total: %d ms"
+                         (* 1000 (float-time (time-subtract c/init-el-start-time c/early-init-el-start-time)))
+                         (* 1000 (float-time (time-subtract c/config-el-start-time c/init-el-start-time)))
+                         (* 1000 (float-time (time-subtract c/config-el-end-time c/config-el-start-time)))
+                         (* 1000 (float-time (time-subtract (current-time) c/config-el-end-time)))
+                         (* 1000 (float-time (time-subtract c/config-el-end-time c/early-init-el-start-time)))
+                         (* 1000 (float-time (time-subtract (current-time) c/early-init-el-start-time)))))) -90))
+
+(defvar c/config-el-start-time (current-time))
+
+(c/start-section "init" "Load Config")
+(literate-config-init)
+(defvar c/config-el-end-time (current-time))
 #+end_src
