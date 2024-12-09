@@ -1,12 +1,21 @@
 #+title: Experimental Emacs Config
 
 * Table of Contents :toc:
+- [[#running-tests][Running tests]]
 - [[#snippets-yasnippet][Snippets (yasnippet)]]
   - [[#commit-message-for-package-version-increase][Commit message for package version increase]]
   - [[#insert-date][Insert date]]
 - [[#insert-date-1][Insert date]]
 - [[#comment-attribution][Comment attribution]]
 - [[#timing][Timing]]
+
+* Running tests
+
+You can call ==vterm-send-string== when the current buffer is in ==vterm-mode==, which if you include a "\n" it will "hit enter" as if you were typing commands
+
+#+begin_src emacs-lisp :tangle no
+
+#+End_src
 
 * Snippets (yasnippet)
 
