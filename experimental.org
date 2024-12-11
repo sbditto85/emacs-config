@@ -15,6 +15,29 @@ You can call ==vterm-send-string== when the current buffer is in ==vterm-mode==,
 
 #+begin_src emacs-lisp :tangle no
 
+  (defun custom/test-component-project ()
+    (interactive)
+    (if (equal current-prefix-arg nil)
+        (custom/split-with-process "ct")
+        (custom/split-with-process "s && ct")
+      ))
+
+  (defun custom/test-web-project ()
+    (interactive)
+    (if (equal current-prefix-arg nil)
+        (custom/split-with-process "rs")
+        (custom/split-with-process "s && rs")
+      ))
+
+  (defun custom/split-with-process (command)
+    (tab-bar-new-tab)
+    (vterm t)
+    (vterm-send-string command)
+    (vterm-send-return)
+    (split-window-right)
+    (vterm t)
+    )
+
 #+End_src
 
 * Snippets (yasnippet)
