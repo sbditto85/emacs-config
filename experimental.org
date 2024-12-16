@@ -8,6 +8,7 @@
 - [[#insert-date-1][Insert date]]
 - [[#comment-attribution][Comment attribution]]
 - [[#timing][Timing]]
+- [[#miles-and-gc][Miles and GC]]
 
 * Running tests
 
@@ -175,3 +176,20 @@ In init:
 (literate-config-init)
 (defvar c/config-el-end-time (current-time))
 #+end_src
+
+* Miles and GC
+
+This weekend I had success lowering my startup time increasing the garbage collection time, then resetting it after startup has finished.
+
+#+begin_src emacs-lisp :tangle no
+(defvar c/gc-cons-threshold (* 16 1024 1024)
+  "The value of `gc-cons-threshold' after Emacs startup.")
+
+(setq gc-cons-threshold most-positive-fixnum)
+
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (setq gc-cons-threshold c/gc-cons-threshold)))
+#+end_src
+
+I also added most of the early-init.el additions from minmal-emacs.d. This also helped decrease the init time to some degree, but not as significant as the above garbage collection.
