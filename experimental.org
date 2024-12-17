@@ -32,12 +32,16 @@ You can call ==vterm-send-string== when the current buffer is in ==vterm-mode==,
 
   (defun custom/split-with-process (command)
     (tab-bar-new-tab)
-    (vterm t)
-    (vterm-send-string command)
-    (vterm-send-return)
-    (split-window-right)
-    (vterm t)
-    )
+    (let ((test-buffer (generate-new-buffer "*testing*"))
+          (process-buffer (generate-new-buffer "*process*")))
+      (switch-to-buffer process-buffer)
+      (vterm-mode)
+      (vterm-send-string command)
+      (vterm-send-return)
+      (split-window-right)
+      (switch-to-buffer test-buffer)
+      (vterm-mode)
+      ))
 
 #+End_src
 
