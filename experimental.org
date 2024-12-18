@@ -1,7 +1,6 @@
 #+title: Experimental Emacs Config
 
 * Table of Contents :toc:
-- [[#running-tests][Running tests]]
 - [[#snippets-yasnippet][Snippets (yasnippet)]]
   - [[#commit-message-for-package-version-increase][Commit message for package version increase]]
   - [[#insert-date][Insert date]]
@@ -9,41 +8,6 @@
 - [[#comment-attribution][Comment attribution]]
 - [[#timing][Timing]]
 - [[#miles-and-gc][Miles and GC]]
-
-* Running tests
-
-You can call ==vterm-send-string== when the current buffer is in ==vterm-mode==, which if you include a "\n" it will "hit enter" as if you were typing commands
-
-#+begin_src emacs-lisp :tangle no
-
-  (defun custom/test-component-project ()
-    (interactive)
-    (if (equal current-prefix-arg nil)
-        (custom/split-with-process "ct")
-        (custom/split-with-process "s && ct")
-      ))
-
-  (defun custom/test-web-project ()
-    (interactive)
-    (if (equal current-prefix-arg nil)
-        (custom/split-with-process "rs")
-        (custom/split-with-process "s && rs")
-      ))
-
-  (defun custom/split-with-process (command)
-    (tab-bar-new-tab)
-    (let ((test-buffer (generate-new-buffer "*testing*"))
-          (process-buffer (generate-new-buffer "*process*")))
-      (switch-to-buffer process-buffer)
-      (vterm-mode)
-      (vterm-send-string command)
-      (vterm-send-return)
-      (split-window-right)
-      (switch-to-buffer test-buffer)
-      (vterm-mode)
-      ))
-
-#+End_src
 
 * Snippets (yasnippet)
 

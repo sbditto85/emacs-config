@@ -638,6 +638,41 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+end_src
 
+** Running tests
+
+You can call ==vterm-send-string== when the current buffer is in ==vterm-mode== to automate populating the terminal prompt. After you can call ==vterm-send-return== to execute the prompt.
+
+#+begin_src emacs-lisp
+
+  (defun custom/test-component-project ()
+    (interactive)
+    (if (equal current-prefix-arg nil)
+        (custom/split-with-process "ct")
+        (custom/split-with-process "s && ct")
+      ))
+
+  (defun custom/test-web-project ()
+    (interactive)
+    (if (equal current-prefix-arg nil)
+        (custom/split-with-process "rs")
+        (custom/split-with-process "s && rs")
+      ))
+
+  (defun custom/split-with-process (command)
+    (tab-bar-new-tab)
+    (let ((test-buffer (generate-new-buffer "*testing*"))
+          (process-buffer (generate-new-buffer "*process*")))
+      (switch-to-buffer process-buffer)
+      (vterm-mode)
+      (vterm-send-string command)
+      (vterm-send-return)
+      (split-window-right)
+      (switch-to-buffer test-buffer)
+      (vterm-mode)
+      ))
+
+#+end_src
+
 * File Types
 
 ** Defaults
