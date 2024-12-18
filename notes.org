@@ -5,3 +5,8 @@
   :vc (:url "https://github.com/aaronjensen/emacs-modern-tab-bar"
        :rev :newest))
 #+end_src
+
+* TO DO
+
+- [ ] Tree view scoped to project
+- [ ] Dired hide or not
