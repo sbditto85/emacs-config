@@ -145,6 +145,14 @@ In init:
 (defvar c/config-el-end-time (current-time))
 #+end_src
 
+Consider this to get package statistics
+
+#+begin_src emacs-lisp
+
+(setq use-package-compute-statistics t)
+
+#+end_src
+
 * Miles and GC
 
 This weekend I had success lowering my startup time increasing the garbage collection time, then resetting it after startup has finished.
