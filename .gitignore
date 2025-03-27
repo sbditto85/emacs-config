@@ -4,3 +4,4 @@ config.el
 experimental.el
 var
 etc
+/task-manager-data.el

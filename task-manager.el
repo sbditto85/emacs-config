@@ -62,6 +62,20 @@
 (defvar task-manager-dirty nil
   "Flag to indicate if tasks have been modified since last save.")
 
+(defvar task-manager-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "a") #'task-manager-add-task)
+    (define-key map (kbd "RET") #'task-manager-select-task)
+    (define-key map (kbd "c") #'task-manager-complete-task)
+    (define-key map (kbd "d") #'task-manager-delete-current-task)
+    (define-key map (kbd "C") #'task-manager-clear-completed-tasks)
+    (define-key map (kbd "u") #'task-manager-deselect-task)
+    (define-key map (kbd "w") #'task-manager-save-tasks)
+    (define-key map (kbd "e") #'task-manager-edit-tasks-file)
+    (define-key map (kbd "q") #'task-manager-hide-buffer)
+    map)
+  "Keymap for `task-manager-mode'.")
+
 (defun task-manager-create-task (text &optional parent)
   "Create a new task with TEXT, optionally as a subtask of PARENT."
   (let ((new-task (task-manager-task-create
@@ -329,40 +343,28 @@
     (setq task-manager-current-task nil)
     (task-manager-render-buffer)))
 
+(when (fboundp 'evil-define-key*)
+  (declare-function evil-define-key* "evil-core" (states keymap key def &rest bindings))
+  (evil-define-key* '(normal) task-manager-mode-map
+    "a" #'task-manager-add-task
+    (kbd "RET") #'task-manager-select-task
+    "c" #'task-manager-complete-task
+    "d" #'task-manager-delete-current-task
+    "C" #'task-manager-clear-completed-tasks
+    "u" #'task-manager-deselect-task
+    "w" #'task-manager-save-tasks
+    "e" #'task-manager-edit-tasks-file
+    "q" #'task-manager-hide-buffer))
+
 (define-derived-mode task-manager-mode special-mode "Task Manager"
   "Major mode for task management."
   (setq buffer-read-only t)
-  (use-local-map task-manager-mode-map)
   (setq-local revert-buffer-function #'task-manager-render-buffer)
 
-  ;; Evil mode specific setup
-  (when (bound-and-true-p evil-mode)
-    (add-hook 'evil-normal-state-entry-hook #'task-manager-evil-setup nil t)
+  ;; Ensure evil bindings work immediately
+  (when (and (fboundp 'evil-mode) evil-mode)
+    (evil-normalize-keymaps)
     (evil-set-initial-state 'task-manager-mode 'normal)))
-
-(defun task-manager-evil-setup ()
-  "Setup evil-mode keybindings for task manager."
-  (when (eq major-mode 'task-manager-mode)
-    (evil-define-key 'normal task-manager-mode-map
-      "a" #'task-manager-add-task
-      "\r" #'task-manager-select-task
-      "c" #'task-manager-complete-task
-      "d" #'task-manager-delete-current-task
-      "C" #'task-manager-clear-completed-tasks
-      "u" #'task-manager-deselect-task
-      "w" #'task-manager-save-tasks
-      "e" #'task-manager-edit-tasks-file
-      "q" #'task-manager-hide-buffer)))
-
-(define-key task-manager-mode-map (kbd "a") #'task-manager-add-task)
-(define-key task-manager-mode-map (kbd "RET") #'task-manager-select-task)
-(define-key task-manager-mode-map (kbd "c") #'task-manager-complete-task)
-(define-key task-manager-mode-map (kbd "d") #'task-manager-delete-current-task)
-(define-key task-manager-mode-map (kbd "C") #'task-manager-clear-completed-tasks)
-(define-key task-manager-mode-map (kbd "u") #'task-manager-deselect-task)
-(define-key task-manager-mode-map (kbd "w") #'task-manager-save-tasks)
-(define-key task-manager-mode-map (kbd "e") #'task-manager-edit-tasks-file)
-(define-key task-manager-mode-map (kbd "q") #'task-manager-hide-buffer)
 
 ;; Save tasks when Emacs exits
 (add-hook 'kill-emacs-hook #'task-manager-save-tasks)
@@ -373,7 +375,12 @@
   (interactive)
   (unless task-manager-tasks
     (task-manager-load-tasks))
-  (task-manager-show-buffer))
+  (task-manager-show-buffer)
+
+  ;; Force evil mode to use our keybindings right away
+  (when (and (fboundp 'evil-mode) evil-mode
+             (eq major-mode 'task-manager-mode))
+    (evil-normalize-keymaps)))
 
 (provide 'task-manager)
 
