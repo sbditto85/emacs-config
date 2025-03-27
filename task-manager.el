@@ -228,25 +228,29 @@
     (dolist (subtask (task-manager-task-subtasks task))
       (task-manager-render-task subtask (1+ depth)))))
 
-(defun task-manager-get-window-config ()
-  "Create a window configuration to position task manager properly."
-  (list
-   (cons 'display-buffer-in-side-window
-         (list (cons 'side 'right)
-               (cons 'slot 0)
-               (cons 'window-width (round (* (frame-width) task-manager-width)))
-               (cons 'window-height (round (* (frame-height) task-manager-height)))
-               (cons 'dedicated t)
-               (cons 'window-parameters
-                     (list (cons 'no-delete-other-windows t)
-                           (cons 'no-other-window nil)))))))
-
 (defun task-manager-position-window ()
   "Position the task manager window in the top right of the frame."
-  (let ((buffer (get-buffer task-manager-buffer-name)))
-    (when buffer
-      (setq task-manager-window
-            (display-buffer buffer (task-manager-get-window-config))))))
+  (let* ((frame (selected-frame))
+         (frame-width (frame-width frame))
+         (window-width (round (* frame-width task-manager-width)))
+         (task-buffer (get-buffer task-manager-buffer-name)))
+
+    ;; Delete existing window if it exists
+    (when (and task-manager-window (window-live-p task-manager-window))
+      (delete-window task-manager-window))
+
+    ;; First split horizontally to get left and right sections
+    (delete-other-windows)
+    (let* ((left-window (selected-window))
+           (right-window (split-window left-window (- frame-width window-width) 'right)))
+
+      ;; Set buffer in right window and make it dedicated
+      (set-window-buffer right-window task-buffer)
+      (set-window-dedicated-p right-window t)
+      (setq task-manager-window right-window)
+
+      ;; Return to the left window for normal editing
+      (select-window left-window))))
 
 (defun task-manager-highlight-current-task ()
   "Highlight the current task in the buffer."
@@ -297,19 +301,22 @@
         (task-manager-mode))
       (task-manager-render-buffer))
 
-    ;; Close any existing task manager window first
-    (when (window-live-p task-manager-window)
-      (delete-window task-manager-window))
-
-    ;; Display in a side window
+    ;; Always position in the top right of the frame
     (task-manager-position-window)))
 
 (defun task-manager-hide-buffer ()
   "Hide the task manager buffer."
   (interactive)
-  (when (window-live-p task-manager-window)
+  (when (and task-manager-window (window-live-p task-manager-window))
     (delete-window task-manager-window)
     (setq task-manager-window nil)))
+
+(defun task-manager-toggle-display ()
+  "Toggle the display of the task manager."
+  (interactive)
+  (if (and task-manager-window (window-live-p task-manager-window))
+      (task-manager-hide-buffer)
+    (task-manager-show-buffer)))
 
 (defun task-manager-add-task ()
   "Interactively add a new task."
@@ -386,8 +393,18 @@
 
   ;; Force evil mode to use our keybindings right away
   (when (and (fboundp 'evil-mode) evil-mode
-             (eq major-mode 'task-manager-mode))
+             (get-buffer task-manager-buffer-name)
+             (with-current-buffer (get-buffer task-manager-buffer-name)
+               (eq major-mode 'task-manager-mode)))
     (evil-normalize-keymaps)))
+
+;;;###autoload
+(defun task-manager-toggle ()
+  "Toggle the display of the task manager."
+  (interactive)
+  (unless task-manager-tasks
+    (task-manager-load-tasks))
+  (task-manager-toggle-display))
 
 (provide 'task-manager)
 
