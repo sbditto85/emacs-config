@@ -76,6 +76,40 @@
     (setq task-manager-tasks
           (cl-remove task task-manager-tasks))))
 
+(defun task-manager-clear-completed-subtasks (task)
+  "Remove all completed subtasks recursively from TASK."
+  (setf (task-manager-task-subtasks task)
+        (cl-remove-if
+         (lambda (subtask)
+           (when (not (task-manager-task-completed subtask))
+             ;; Recursively process incomplete subtasks
+             (task-manager-clear-completed-subtasks subtask)
+             nil)  ; Keep this subtask
+           t)      ; Remove completed subtasks
+         (task-manager-task-subtasks task))))
+
+(defun task-manager-clear-completed-tasks ()
+  "Remove all completed tasks and subtasks."
+  (interactive)
+  (when (y-or-n-p "Delete all completed tasks? ")
+    ;; First, remove completed top-level tasks
+    (setq task-manager-tasks
+          (cl-remove-if
+           (lambda (task)
+             (task-manager-task-completed task))
+           task-manager-tasks))
+
+    ;; Then clean completed subtasks from remaining tasks
+    (dolist (task task-manager-tasks)
+      (task-manager-clear-completed-subtasks task))
+
+    ;; Clear current task if it was completed
+    (when (and task-manager-current-task
+               (task-manager-task-completed task-manager-current-task))
+      (setq task-manager-current-task nil))
+
+    (task-manager-render-buffer)))
+
 (defun task-manager-find-task-by-line (line-number)
   "Find task from the task-manager-task-markers by line number."
   (let ((marker-key (number-to-string line-number)))
@@ -236,6 +270,7 @@
       "\r" #'task-manager-select-task
       "c" #'task-manager-complete-task
       "d" #'task-manager-delete-current-task
+      "C" #'task-manager-clear-completed-tasks
       "u" #'task-manager-deselect-task
       "q" #'task-manager-hide-buffer)))
 
@@ -243,6 +278,7 @@
 (define-key task-manager-mode-map (kbd "RET") #'task-manager-select-task)
 (define-key task-manager-mode-map (kbd "c") #'task-manager-complete-task)
 (define-key task-manager-mode-map (kbd "d") #'task-manager-delete-current-task)
+(define-key task-manager-mode-map (kbd "C") #'task-manager-clear-completed-tasks)
 (define-key task-manager-mode-map (kbd "u") #'task-manager-deselect-task)
 (define-key task-manager-mode-map (kbd "q") #'task-manager-hide-buffer)
 
