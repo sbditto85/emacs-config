@@ -3,6 +3,7 @@
 ;;; Commentary:
 ;; This package provides a lightweight task management system
 ;; with features like adding tasks, subtasks, completion, and frame positioning.
+;; Supports both standard Emacs and evil-mode.
 
 ;;; Code:
 
@@ -207,7 +208,22 @@
   "Major mode for task management."
   (setq buffer-read-only t)
   (use-local-map task-manager-mode-map)
-  (setq-local revert-buffer-function #'task-manager-render-buffer))
+  (setq-local revert-buffer-function #'task-manager-render-buffer)
+
+  ;; Evil mode specific setup
+  (when (bound-and-true-p evil-mode)
+    (add-hook 'evil-normal-state-entry-hook #'task-manager-evil-setup nil t)
+    (evil-set-initial-state 'task-manager-mode 'normal)))
+
+(defun task-manager-evil-setup ()
+  "Setup evil-mode keybindings for task manager."
+  (when (eq major-mode 'task-manager-mode)
+    (evil-define-key 'normal task-manager-mode-map
+      "a" #'task-manager-add-task
+      "\r" #'task-manager-select-task
+      "c" #'task-manager-complete-task
+      "d" #'task-manager-delete-current-task
+      "q" #'task-manager-hide-buffer)))
 
 (define-key task-manager-mode-map (kbd "a") #'task-manager-add-task)
 (define-key task-manager-mode-map (kbd "RET") #'task-manager-select-task)
