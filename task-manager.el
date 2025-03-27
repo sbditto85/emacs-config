@@ -43,8 +43,8 @@
 (defvar task-manager-window nil
   "Window for the task manager.")
 
-(defvar task-manager-frame nil
-  "Frame for the task manager.")
+(defvar task-manager-task-markers nil
+  "Markers for all tasks, used for selection.")
 
 (defvar task-manager-current-task nil
   "Currently selected task.")
@@ -76,29 +76,29 @@
     (setq task-manager-tasks
           (cl-remove task task-manager-tasks))))
 
+(defun task-manager-find-task-by-line (line-number)
+  "Find task from the task-manager-task-markers by line number."
+  (let ((marker-key (number-to-string line-number)))
+    (when (and task-manager-task-markers
+               (gethash marker-key task-manager-task-markers))
+      (gethash marker-key task-manager-task-markers))))
+
 (defun task-manager-find-task-at-point ()
   "Find the task at the current point in the buffer."
-  (save-excursion
-    (beginning-of-line)
-    (let ((line (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
-      (cl-find-if
-       (lambda (task)
-         (or (string-match-p (regexp-quote (task-manager-task-text task)) line)
-             (cl-some
-              (lambda (subtask)
-                (string-match-p (regexp-quote (task-manager-task-text subtask)) line))
-              (task-manager-task-subtasks task))))
-       task-manager-tasks))))
+  (task-manager-find-task-by-line (line-number-at-pos)))
 
-(defun task-manager-render-task (task &optional depth)
-  "Render a TASK with optional DEPTH for indentation."
-  (let* ((depth (or depth 0))
-         (indent (make-string (* depth 2) ? ))
+(defun task-manager-render-task (task depth)
+  "Render a TASK with DEPTH for indentation and track its position."
+  (let* ((indent (make-string (* depth 2) ? ))
          (status (if (task-manager-task-completed task) "✓ " "☐ "))
          (text (if (task-manager-task-completed task)
                    (propertize (task-manager-task-text task) 'face 'shadow 'strike-through t)
-                 (task-manager-task-text task))))
+                 (task-manager-task-text task)))
+         (start (point)))
+    ;; Add line marker
+    (puthash (number-to-string (line-number-at-pos)) task task-manager-task-markers)
     (insert indent status text "\n")
+    ;; Render subtasks
     (dolist (subtask (task-manager-task-subtasks task))
       (task-manager-render-task subtask (1+ depth)))))
 
@@ -108,7 +108,6 @@
          (frame-width (frame-width frame))
          (frame-height (frame-height frame))
          (window-width (round (* frame-width task-manager-width)))
-         (window-height (round (* frame-height task-manager-height)))
          (task-buffer (get-buffer task-manager-buffer-name)))
 
     ;; If the task manager window doesn't exist, create it
@@ -129,18 +128,24 @@
   (when task-manager-current-task
     (save-excursion
       (goto-char (point-min))
-      (while (and (not (eobp))
-                  (not (string-match-p
-                        (regexp-quote (task-manager-task-text task-manager-current-task))
-                        (buffer-substring-no-properties (line-beginning-position) (line-end-position)))))
-        (forward-line 1))
-      (setq task-manager-task-overlay (make-overlay (line-beginning-position) (line-end-position)))
-      (overlay-put task-manager-task-overlay 'face 'highlight))))
+      ;; Find the line containing the current task
+      (cl-loop for i from 1
+               while (not (eobp))
+               do
+               (when (equal (task-manager-find-task-by-line i) task-manager-current-task)
+                 (setq task-manager-task-overlay
+                       (make-overlay (line-beginning-position) (line-end-position)))
+                 (overlay-put task-manager-task-overlay 'face 'highlight)
+                 (cl-return))
+               (forward-line 1)))))
 
 (defun task-manager-render-buffer ()
   "Render the task manager buffer."
   (let ((inhibit-read-only t))
     (erase-buffer)
+    ;; Create a new hash table for task markers
+    (setq task-manager-task-markers (make-hash-table :test 'equal))
+
     (insert (propertize
              (format "Task Manager - Current: %s"
                      (or (and task-manager-current-task
@@ -148,10 +153,12 @@
                          "None"))
              'face 'bold)
             "\n\n")
+
     (if task-manager-tasks
         (dolist (task task-manager-tasks)
-          (task-manager-render-task task))
+          (task-manager-render-task task 0))
       (insert "No tasks. Add a task using 'M-x task-manager-add-task'\n"))
+
     (task-manager-highlight-current-task)))
 
 (defun task-manager-show-buffer ()
@@ -187,14 +194,14 @@
   (let ((task (task-manager-find-task-at-point)))
     (when task
       (setq task-manager-current-task task)
-      (task-manager-show-buffer))))
+      (task-manager-render-buffer))))
 
 (defun task-manager-complete-task ()
   "Complete the current or selected task."
   (interactive)
   (when task-manager-current-task
     (task-manager-toggle-task-completion task-manager-current-task)
-    (task-manager-show-buffer)))
+    (task-manager-render-buffer)))
 
 (defun task-manager-delete-current-task ()
   "Delete the current task."
@@ -202,7 +209,7 @@
   (when task-manager-current-task
     (task-manager-delete-task task-manager-current-task)
     (setq task-manager-current-task nil)
-    (task-manager-show-buffer)))
+    (task-manager-render-buffer)))
 
 (define-derived-mode task-manager-mode special-mode "Task Manager"
   "Major mode for task management."
