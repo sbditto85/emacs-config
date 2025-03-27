@@ -181,20 +181,26 @@
 (defun task-manager-add-task ()
   "Interactively add a new task."
   (interactive)
-  (let ((task-text (read-string "Enter task: "))
-        (parent (when task-manager-current-task
-                  (y-or-n-p "Add as a subtask? ")
-                  task-manager-current-task)))
+  (let* ((task-text (read-string "Enter task: "))
+         (add-as-subtask (and task-manager-current-task
+                             (y-or-n-p "Add as a subtask? ")))
+         (parent (when add-as-subtask
+                   task-manager-current-task)))
     (task-manager-create-task task-text parent)
-    (task-manager-show-buffer)))
+    (task-manager-render-buffer)))
 
 (defun task-manager-select-task ()
   "Select the task at point."
   (interactive)
   (let ((task (task-manager-find-task-at-point)))
-    (when task
-      (setq task-manager-current-task task)
-      (task-manager-render-buffer))))
+    (setq task-manager-current-task task)
+    (task-manager-render-buffer)))
+
+(defun task-manager-deselect-task ()
+  "Deselect the current task."
+  (interactive)
+  (setq task-manager-current-task nil)
+  (task-manager-render-buffer))
 
 (defun task-manager-complete-task ()
   "Complete the current or selected task."
@@ -230,12 +236,14 @@
       "\r" #'task-manager-select-task
       "c" #'task-manager-complete-task
       "d" #'task-manager-delete-current-task
+      "u" #'task-manager-deselect-task
       "q" #'task-manager-hide-buffer)))
 
 (define-key task-manager-mode-map (kbd "a") #'task-manager-add-task)
 (define-key task-manager-mode-map (kbd "RET") #'task-manager-select-task)
 (define-key task-manager-mode-map (kbd "c") #'task-manager-complete-task)
 (define-key task-manager-mode-map (kbd "d") #'task-manager-delete-current-task)
+(define-key task-manager-mode-map (kbd "u") #'task-manager-deselect-task)
 (define-key task-manager-mode-map (kbd "q") #'task-manager-hide-buffer)
 
 ;;;###autoload
