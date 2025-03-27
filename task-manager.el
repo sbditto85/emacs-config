@@ -33,7 +33,8 @@
   id
   text
   (completed nil)
-  (subtasks nil))
+  (subtasks nil)
+  (parent nil))
 
 (defvar task-manager-tasks '()
   "List of all tasks in the task manager.")
@@ -47,11 +48,15 @@
 (defvar task-manager-current-task nil
   "Currently selected task.")
 
+(defvar task-manager-task-overlay nil
+  "Overlay for highlighting the current task.")
+
 (defun task-manager-create-task (text &optional parent)
   "Create a new task with TEXT, optionally as a subtask of PARENT."
   (let ((new-task (task-manager-task-create
                    :id (random 10000)
-                   :text text)))
+                   :text text
+                   :parent parent)))
     (if parent
         (push new-task (task-manager-task-subtasks parent))
       (push new-task task-manager-tasks))
@@ -63,9 +68,26 @@
         (not (task-manager-task-completed task))))
 
 (defun task-manager-delete-task (task)
-  "Remove TASK from the task list."
-  (setq task-manager-tasks
-        (cl-remove task task-manager-tasks)))
+  "Remove TASK from the task list or its parent's subtasks."
+  (if (task-manager-task-parent task)
+      (setf (task-manager-task-subtasks (task-manager-task-parent task))
+            (cl-remove task (task-manager-task-subtasks (task-manager-task-parent task))))
+    (setq task-manager-tasks
+          (cl-remove task task-manager-tasks))))
+
+(defun task-manager-find-task-at-point ()
+  "Find the task at the current point in the buffer."
+  (save-excursion
+    (beginning-of-line)
+    (let ((line (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
+      (cl-find-if
+       (lambda (task)
+         (or (string-match-p (regexp-quote (task-manager-task-text task)) line)
+             (cl-some
+              (lambda (subtask)
+                (string-match-p (regexp-quote (task-manager-task-text subtask)) line))
+              (task-manager-task-subtasks task))))
+       task-manager-tasks))))
 
 (defun task-manager-render-task (task &optional depth)
   "Render a TASK with optional DEPTH for indentation."
@@ -99,6 +121,21 @@
         (set-window-dedicated-p new-window t)
         (setq task-manager-window new-window)))))
 
+(defun task-manager-highlight-current-task ()
+  "Highlight the current task in the buffer."
+  (when task-manager-task-overlay
+    (delete-overlay task-manager-task-overlay))
+  (when task-manager-current-task
+    (save-excursion
+      (goto-char (point-min))
+      (while (and (not (eobp))
+                  (not (string-match-p
+                        (regexp-quote (task-manager-task-text task-manager-current-task))
+                        (buffer-substring-no-properties (line-beginning-position) (line-end-position)))))
+        (forward-line 1))
+      (setq task-manager-task-overlay (make-overlay (line-beginning-position) (line-end-position)))
+      (overlay-put task-manager-task-overlay 'face 'highlight))))
+
 (defun task-manager-render-buffer ()
   "Render the task manager buffer."
   (let ((inhibit-read-only t))
@@ -113,7 +150,8 @@
     (if task-manager-tasks
         (dolist (task task-manager-tasks)
           (task-manager-render-task task))
-      (insert "No tasks. Add a task using 'M-x task-manager-add-task'\n"))))
+      (insert "No tasks. Add a task using 'M-x task-manager-add-task'\n"))
+    (task-manager-highlight-current-task)))
 
 (defun task-manager-show-buffer ()
   "Show the task manager buffer."
@@ -142,6 +180,14 @@
     (task-manager-create-task task-text parent)
     (task-manager-show-buffer)))
 
+(defun task-manager-select-task ()
+  "Select the task at point."
+  (interactive)
+  (let ((task (task-manager-find-task-at-point)))
+    (when task
+      (setq task-manager-current-task task)
+      (task-manager-show-buffer))))
+
 (defun task-manager-complete-task ()
   "Complete the current or selected task."
   (interactive)
@@ -164,6 +210,7 @@
   (setq-local revert-buffer-function #'task-manager-render-buffer))
 
 (define-key task-manager-mode-map (kbd "a") #'task-manager-add-task)
+(define-key task-manager-mode-map (kbd "RET") #'task-manager-select-task)
 (define-key task-manager-mode-map (kbd "c") #'task-manager-complete-task)
 (define-key task-manager-mode-map (kbd "d") #'task-manager-delete-current-task)
 (define-key task-manager-mode-map (kbd "q") #'task-manager-hide-buffer)
