@@ -4,12 +4,14 @@
 ;; This package provides a lightweight task management system
 ;; with features like adding tasks, subtasks, completion, and frame positioning.
 ;; Supports both standard Emacs and evil-mode.
+;; Task data is persistent between Emacs sessions.
 
 ;;; Code:
 
 (require 'cl-lib)
 (require 'widget)
 (require 'wid-edit)
+(require 'pp)
 
 (defgroup task-manager nil
   "Customization group for the task manager package."
@@ -28,6 +30,11 @@
 (defcustom task-manager-height 0.5
   "Height of the task manager window as a fraction of frame height."
   :type 'float
+  :group 'task-manager)
+
+(defcustom task-manager-save-file (expand-file-name "task-manager-data.el" user-emacs-directory)
+  "File to save task manager data."
+  :type 'file
   :group 'task-manager)
 
 (cl-defstruct (task-manager-task (:constructor task-manager-task-create))
@@ -52,6 +59,9 @@
 (defvar task-manager-task-overlay nil
   "Overlay for highlighting the current task.")
 
+(defvar task-manager-dirty nil
+  "Flag to indicate if tasks have been modified since last save.")
+
 (defun task-manager-create-task (text &optional parent)
   "Create a new task with TEXT, optionally as a subtask of PARENT."
   (let ((new-task (task-manager-task-create
@@ -61,12 +71,14 @@
     (if parent
         (push new-task (task-manager-task-subtasks parent))
       (push new-task task-manager-tasks))
+    (setq task-manager-dirty t)
     new-task))
 
 (defun task-manager-toggle-task-completion (task)
   "Toggle the completion status of TASK."
   (setf (task-manager-task-completed task)
-        (not (task-manager-task-completed task))))
+        (not (task-manager-task-completed task)))
+  (setq task-manager-dirty t))
 
 (defun task-manager-delete-task (task)
   "Remove TASK from the task list or its parent's subtasks."
@@ -74,7 +86,8 @@
       (setf (task-manager-task-subtasks (task-manager-task-parent task))
             (cl-remove task (task-manager-task-subtasks (task-manager-task-parent task))))
     (setq task-manager-tasks
-          (cl-remove task task-manager-tasks))))
+          (cl-remove task task-manager-tasks)))
+  (setq task-manager-dirty t))
 
 (defun task-manager-clear-completed-subtasks (task)
   "Remove all completed subtasks recursively from TASK."
@@ -86,7 +99,8 @@
              (task-manager-clear-completed-subtasks subtask)
              nil)  ; Keep this subtask
            t)      ; Remove completed subtasks
-         (task-manager-task-subtasks task))))
+         (task-manager-task-subtasks task)))
+  (setq task-manager-dirty t))
 
 (defun task-manager-clear-completed-tasks ()
   "Remove all completed tasks and subtasks."
@@ -108,6 +122,7 @@
                (task-manager-task-completed task-manager-current-task))
       (setq task-manager-current-task nil))
 
+    (setq task-manager-dirty t)
     (task-manager-render-buffer)))
 
 (defun task-manager-find-task-by-line (line-number)
@@ -120,6 +135,69 @@
 (defun task-manager-find-task-at-point ()
   "Find the task at the current point in the buffer."
   (task-manager-find-task-by-line (line-number-at-pos)))
+
+(defun task-manager-serialize-task (task)
+  "Convert TASK to a serializable form."
+  (let ((serialized
+         (list :id (task-manager-task-id task)
+               :text (task-manager-task-text task)
+               :completed (task-manager-task-completed task)
+               :subtasks nil)))
+    ;; Recursively serialize subtasks
+    (when (task-manager-task-subtasks task)
+      (setf (plist-get serialized :subtasks)
+            (mapcar #'task-manager-serialize-task
+                    (task-manager-task-subtasks task))))
+    serialized))
+
+(defun task-manager-deserialize-task (data &optional parent)
+  "Convert serialized DATA back to a task object with optional PARENT."
+  (let ((task (task-manager-task-create
+               :id (plist-get data :id)
+               :text (plist-get data :text)
+               :completed (plist-get data :completed)
+               :parent parent)))
+    ;; Recursively deserialize subtasks
+    (when (plist-get data :subtasks)
+      (setf (task-manager-task-subtasks task)
+            (mapcar (lambda (subtask-data)
+                      (task-manager-deserialize-task subtask-data task))
+                    (plist-get data :subtasks))))
+    task))
+
+(defun task-manager-save-tasks ()
+  "Save tasks to the save file."
+  (interactive)
+  (when task-manager-dirty
+    (with-temp-file task-manager-save-file
+      (let ((serialized-tasks
+             (mapcar #'task-manager-serialize-task task-manager-tasks)))
+        (insert ";; Task Manager Data - Edit with caution\n")
+        (insert ";; Format: List of task plists with :id, :text, :completed, and :subtasks\n\n")
+        (pp serialized-tasks (current-buffer))))
+    (setq task-manager-dirty nil)
+    (message "Tasks saved to %s" task-manager-save-file)))
+
+(defun task-manager-load-tasks ()
+  "Load tasks from the save file."
+  (interactive)
+  (when (file-exists-p task-manager-save-file)
+    (with-temp-buffer
+      (insert-file-contents task-manager-save-file)
+      (goto-char (point-min))
+      (condition-case nil
+          (let ((data (read (current-buffer))))
+            (setq task-manager-tasks
+                  (mapcar #'task-manager-deserialize-task data))
+            (setq task-manager-dirty nil)
+            (message "Tasks loaded from %s" task-manager-save-file))
+        (error (message "Error reading task data from %s" task-manager-save-file))))))
+
+(defun task-manager-edit-tasks-file ()
+  "Open the task data file for manual editing."
+  (interactive)
+  (find-file task-manager-save-file)
+  (message "Edit carefully. Reload tasks with 'M-x task-manager-load-tasks' when done."))
 
 (defun task-manager-render-task (task depth)
   "Render a TASK with DEPTH for indentation and track its position."
@@ -272,6 +350,8 @@
       "d" #'task-manager-delete-current-task
       "C" #'task-manager-clear-completed-tasks
       "u" #'task-manager-deselect-task
+      "w" #'task-manager-save-tasks
+      "e" #'task-manager-edit-tasks-file
       "q" #'task-manager-hide-buffer)))
 
 (define-key task-manager-mode-map (kbd "a") #'task-manager-add-task)
@@ -280,12 +360,19 @@
 (define-key task-manager-mode-map (kbd "d") #'task-manager-delete-current-task)
 (define-key task-manager-mode-map (kbd "C") #'task-manager-clear-completed-tasks)
 (define-key task-manager-mode-map (kbd "u") #'task-manager-deselect-task)
+(define-key task-manager-mode-map (kbd "w") #'task-manager-save-tasks)
+(define-key task-manager-mode-map (kbd "e") #'task-manager-edit-tasks-file)
 (define-key task-manager-mode-map (kbd "q") #'task-manager-hide-buffer)
+
+;; Save tasks when Emacs exits
+(add-hook 'kill-emacs-hook #'task-manager-save-tasks)
 
 ;;;###autoload
 (defun task-manager ()
   "Start the task manager."
   (interactive)
+  (unless task-manager-tasks
+    (task-manager-load-tasks))
   (task-manager-show-buffer))
 
 (provide 'task-manager)
