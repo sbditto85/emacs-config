@@ -543,6 +543,8 @@ The default configuration is quite good but you can check out the [[https://gith
     "p p" '(tabspaces-open-or-create-project-and-workspace :which-key "Switch Project")
     "p t" '(custom/vterm-toggle-project :which-key "Terminal")
 
+    "t t" '(task-manager-toggle :which-key "Task Manager toggle")
+
     "q"  '(:ignore q :which-key "quit/session")
     "q q" '(save-buffers-kill-terminal :which-key "Save and Close Emacs")
     ))
@@ -845,6 +847,19 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   ;; (evil-append 0)
   (insert " - " (custom/author) ", ")
   (custom/insert-date-time))
+
+#+end_src
+
+** Task Manager (Experimental)
+
+"Vibe" coded a task manager for Emacs using Claude. Interesting experiment that went mostly ok.
+
+#+begin_src emacs-lisp
+
+(use-package task-manager
+  :ensure nil
+  :after evil
+  :load-path (lambda () (expand-file-name "custom-packages" user-emacs-directory)))
 
 #+end_src
 
