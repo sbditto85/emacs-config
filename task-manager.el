@@ -29,6 +29,12 @@
   :type 'float
   :group 'task-manager)
 
+(cl-defstruct (task-manager-task (:constructor task-manager-task-create))
+  id
+  text
+  (completed nil)
+  (subtasks nil))
+
 (defvar task-manager-tasks '()
   "List of all tasks in the task manager.")
 
@@ -41,19 +47,11 @@
 (defvar task-manager-current-task nil
   "Currently selected task.")
 
-(defstruct task-manager-task
-  id
-  text
-  completed
-  subtasks)
-
 (defun task-manager-create-task (text &optional parent)
   "Create a new task with TEXT, optionally as a subtask of PARENT."
-  (let ((new-task (make-task-manager-task
+  (let ((new-task (task-manager-task-create
                    :id (random 10000)
-                   :text text
-                   :completed nil
-                   :subtasks '())))
+                   :text text)))
     (if parent
         (push new-task (task-manager-task-subtasks parent))
       (push new-task task-manager-tasks))
@@ -67,7 +65,7 @@
 (defun task-manager-delete-task (task)
   "Remove TASK from the task list."
   (setq task-manager-tasks
-        (remove task task-manager-tasks)))
+        (cl-remove task task-manager-tasks)))
 
 (defun task-manager-render-task (task &optional depth)
   "Render a TASK with optional DEPTH for indentation."
