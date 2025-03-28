@@ -250,8 +250,8 @@
       (set-window-dedicated-p bottom-window t)
       (setq task-manager-window bottom-window)
 
-      ;; Return to the main window
-      (select-window main-window))))
+      ;; Focus the task manager window
+      (select-window bottom-window))))
 
 (defun task-manager-highlight-current-task ()
   "Highlight the current task in the buffer."
