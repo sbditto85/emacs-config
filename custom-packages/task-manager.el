@@ -22,12 +22,12 @@
   :type 'string
   :group 'task-manager)
 
-(defcustom task-manager-width 0.25
+(defcustom task-manager-width 1.0
   "Width of the task manager window as a fraction of frame width."
   :type 'float
   :group 'task-manager)
 
-(defcustom task-manager-height 0.5
+(defcustom task-manager-height 0.3
   "Height of the task manager window as a fraction of frame height."
   :type 'float
   :group 'task-manager)
@@ -229,28 +229,29 @@
       (task-manager-render-task subtask (1+ depth)))))
 
 (defun task-manager-position-window ()
-  "Position the task manager window in the top right of the frame."
+  "Position the task manager window at the bottom of the frame."
   (let* ((frame (selected-frame))
-         (frame-width (frame-width frame))
-         (window-width (round (* frame-width task-manager-width)))
+         (frame-height (frame-height frame))
+         (window-height (round (* frame-height task-manager-height)))
          (task-buffer (get-buffer task-manager-buffer-name)))
 
     ;; Delete existing window if it exists
     (when (and task-manager-window (window-live-p task-manager-window))
       (delete-window task-manager-window))
 
-    ;; First split horizontally to get left and right sections
-    (delete-other-windows)
-    (let* ((left-window (selected-window))
-           (right-window (split-window left-window (- frame-width window-width) 'right)))
+    ;; Split window horizontally at the bottom
+    (let* ((main-window (selected-window))
+           (bottom-window (split-window main-window
+                                       (- (window-height main-window) window-height)
+                                       'below)))
 
-      ;; Set buffer in right window and make it dedicated
-      (set-window-buffer right-window task-buffer)
-      (set-window-dedicated-p right-window t)
-      (setq task-manager-window right-window)
+      ;; Set buffer in bottom window and make it dedicated
+      (set-window-buffer bottom-window task-buffer)
+      (set-window-dedicated-p bottom-window t)
+      (setq task-manager-window bottom-window)
 
-      ;; Return to the left window for normal editing
-      (select-window left-window))))
+      ;; Return to the main window
+      (select-window main-window))))
 
 (defun task-manager-highlight-current-task ()
   "Highlight the current task in the buffer."
@@ -292,17 +293,20 @@
 
     (task-manager-highlight-current-task)))
 
-(defun task-manager-show-buffer ()
-  "Show the task manager buffer."
-  (interactive)
+(defun task-manager-ensure-buffer ()
+  "Ensure task manager buffer exists and is properly initialized."
   (let ((buffer (get-buffer-create task-manager-buffer-name)))
     (with-current-buffer buffer
       (unless (eq major-mode 'task-manager-mode)
         (task-manager-mode))
       (task-manager-render-buffer))
+    buffer))
 
-    ;; Always position in the top right of the frame
-    (task-manager-position-window)))
+(defun task-manager-show-buffer ()
+  "Show the task manager buffer."
+  (interactive)
+  (task-manager-ensure-buffer)
+  (task-manager-position-window))
 
 (defun task-manager-hide-buffer ()
   "Hide the task manager buffer."
@@ -317,6 +321,18 @@
   (if (and task-manager-window (window-live-p task-manager-window))
       (task-manager-hide-buffer)
     (task-manager-show-buffer)))
+
+(defun task-manager-quick-add-task ()
+  "Add a task from anywhere, without displaying the task manager."
+  (interactive)
+  (unless task-manager-tasks
+    (task-manager-load-tasks))
+
+  (let ((task-text (read-string "Enter task: ")))
+    (when (not (string-empty-p task-text))
+      (task-manager-create-task task-text)
+      (message "Task added: %s" task-text)
+      (task-manager-save-tasks))))
 
 (defun task-manager-add-task ()
   "Interactively add a new task."
