@@ -70,7 +70,8 @@ directory cleaner
 #+begin_src emacs-lisp
 
 (use-package no-littering
-  :ensure (:wait t))
+  :ensure (:wait t)
+  :after treesit)
 
 #+end_src
 
