@@ -606,6 +606,7 @@ The default configuration is quite good but you can check out the [[https://gith
 (use-package dired
   :after evil
   :config
+  (setq dired-kill-when-opening-new-dired-buffer t)
   (evil-define-key 'normal dired-mode-map
     (kbd "h") 'dired-up-directory
     (kbd "l") 'dired-find-file
