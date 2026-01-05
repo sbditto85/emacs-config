@@ -853,9 +853,26 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 ** Task Manager (Experimental)
 
-"Vibe" coded a task manager for Emacs using Claude. Interesting experiment that went mostly ok.
+"Vibe" coded a task manager for Emacs using Cursor. Interesting experiment that went mostly ok.
 
 #+begin_src emacs-lisp
+
+(use-package tasks
+  :ensure nil
+  :after evil
+  :load-path (lambda () (expand-file-name "custom-packages" user-emacs-directory))
+  :config
+  (tasks-setup "~/org/tasks.org" "** Task Manager")
+  :bind
+  ("C-c t" . tasks-show))
+
+#+end_src
+
+** Task Manager (Experimental)
+
+"Vibe" coded a task manager for Emacs using Claude. Interesting experiment that went mostly ok.
+
+#+begin_src emacs-lisp :tangle no
 
 (use-package task-manager
   :ensure nil
