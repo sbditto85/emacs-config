@@ -868,10 +868,13 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 ** Terminal Emulator (vterm)
 
+For some reason I have to do a ==elpaca rebuild== then select ==vterm== and close and reopen Emacs for it to compile and load ==vterm==.
+After that Emacs loads without any warnings and ==vterm== works.
+
 #+begin_src emacs-lisp
 
 (use-package vterm
-  :ensure t
+  :ensure (:wait t)
   :init
   (setq vterm-always-compile-module t
         ;; Defaults to 0.1. Decreasing this greatly impacts performance of
