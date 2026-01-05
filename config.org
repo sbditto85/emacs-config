@@ -885,7 +885,8 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 #+begin_src emacs-lisp
 
 (use-package vterm-toggle
-  :ensure t)
+  :ensure t
+  :after vterm)
 
 (defun custom/vterm-toggle-project ()
   (interactive)
