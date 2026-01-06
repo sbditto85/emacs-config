@@ -1,6 +1,8 @@
 eln-cache
 elpaca
+elpa
 config.el
 experimental.el
 var
 etc
+.emacs-config-tabspaces-session.el
