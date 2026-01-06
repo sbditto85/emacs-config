@@ -8,7 +8,6 @@
 
 * TO DO
 
-- [ ] Multi cursor
 - [ ] Org capture
 - [ ] White space mode in markdown files, but only when no non-white space characters follow
 - [ ] <Space>-b setup for buffer manipulation
