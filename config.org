@@ -534,8 +534,12 @@ The default configuration is quite good but you can check out the [[https://gith
     "p m 8" '((lambda () (interactive) (tab-move-to 8)) :which-key "Move To Tab 8")
     "p m 9" '((lambda () (interactive) (tab-move-to 9)) :which-key "Move To Tab 9")
 
+    "p b" '(project-switch-to-buffer :which-key "Switch Buffer")
     "p d" '(project-dired :which-key "Directory")
-    "p f" '(project-find-file :which-key "Find File")
+
+    "p f" '(:ignore f :which-key "File")
+    "p f f" '(project-find-file :which-key "Find File")
+    "p f p" '(custom/yank-project-file-path :which-key "File Path")
 
     "p c" '(tabspaces-close-workspace :which-key "Close Project")
     "p k" '(tabspaces-kill-buffers-close-workspace :which-key "Close Project & Kill Buffers")
@@ -748,6 +752,18 @@ You can call ==vterm-send-string== when the current buffer is in ==vterm-mode== 
       (switch-to-buffer test-buffer)
       (vterm-mode)
       ))
+
+#+end_src
+
+** File Path
+
+#+begin_src emacs-lisp
+
+(defun custom/yank-project-file-path ()
+  (interactive)
+  (kill-new
+    (file-relative-name buffer-file-name (project-root (project-current))))
+  )
 
 #+end_src
 
