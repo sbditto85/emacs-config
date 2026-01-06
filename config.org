@@ -694,7 +694,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
         tabspaces-project-switch-commands #'project-find-file)
 
   (tabspaces-mode)
-  (global-tab-line-mode 1)
+  (global-tab-line-mode -1)
 
   :config
   (consult-customize consult--source-buffer :hidden t :default nil)
