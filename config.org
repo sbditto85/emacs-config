@@ -646,6 +646,27 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+end_src
 
+* Multiple Cursors
+
+** Evil MC
+
+#+begin_src emacs-lisp
+
+(use-package evil-mc
+  :ensure t
+  :after evil
+  :config
+
+  (global-evil-mc-mode 1)
+
+  (evil-define-key '(normal visual motion) 'global
+    (kbd "M-I") 'evil-mc-make-and-goto-next-match
+    (kbd "M-i") 'evil-mc-make-cursor-move-next-line
+    (kbd "M-g") 'evil-mc-undo-all-cursors)
+  )
+
+#+end_src
+
 * Projects
 
 ** Tree Viewer (Treemacs)
