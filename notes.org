@@ -8,14 +8,16 @@
 
 * TO DO
 
-- [ ] Org capture
+- [ ] <Space>-s setup for search related things (project, projects)
 - [ ] White space mode in markdown files, but only when no non-white space characters follow
+- [ ] Update the date insert function to not have a leading '0'
+- [ ] Org capture
 - [ ] <Space>-b setup for buffer manipulation
 - [ ] <Space>-w setup for window management (split, close, etc)
 - [ ] <Space>-f setup for file related things (buffer path)
-- [ ] <Space>-s setup for search related things (project, projects)
 - [ ] Tree view scoped to project
   - [ ] Also with evil bindings
 - [ ] Force toggle vterm to open at the bottom and not to the side
 - [ ] Spelling does a better drop down then the numbers at the top
 - [ ] How to switch between tabs or handle tabs for files (and how that relates to project tabs)
+- [ ] Meta Space for leader when in insert mode
