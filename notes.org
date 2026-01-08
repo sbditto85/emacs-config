@@ -8,8 +8,6 @@
 
 * TO DO
 
-- [ ] <Space>-s setup for search related things (project, projects)
-- [ ] White space mode in markdown files, but only when no non-white space characters follow
 - [ ] Update the date insert function to not have a leading '0'
 - [ ] Org capture
 - [ ] <Space>-b setup for buffer manipulation

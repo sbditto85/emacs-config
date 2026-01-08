@@ -656,6 +656,26 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+end_src
 
+* Whitespace mode
+
+#+begin_src emacs-lisp
+
+(global-whitespace-mode +1)
+(setq whitespace-style '(face indentation trailing))
+
+#+end_src
+
+** Trim lines with only spaces from a file
+
+#+begin_src emacs-lisp
+
+(defun custom/remove-space-lines ()
+  (interactive)
+  (evil-ex "%s/^ +$//")
+  )
+
+#+end_src
+
 * Multiple Cursors
 
 ** Evil MC
