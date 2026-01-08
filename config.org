@@ -510,6 +510,9 @@ The default configuration is quite good but you can check out the [[https://gith
     "h s" '(describe-symbol :which-key "Symbol")
     "h v" '(describe-variable :which-key "Variable")
 
+    "s"  '(:ignore s :which-key "Search")
+    "s p"  '(custom/search-projects :which-key "Search Projects")
+
     "p"  '(:ignore p :which-key "Project")
 
     ;; ## Should these be behind a prefix? - Casey, Sun Dec 01 2024
@@ -773,6 +776,19 @@ You can call ==vterm-send-string== when the current buffer is in ==vterm-mode== 
 
 (defun custom/projects-path ()
   (getenv "PROJECTS_PATH")
+  )
+
+#+end_src
+
+** Search all
+
+#+begin_src emacs-lisp
+
+(defun custom/search-projects ()
+  (interactive)
+  (let ((default-directory (nth 0 (split-string (custom/projects-path))))
+        )
+     (consult-ripgrep))
   )
 
 #+end_src
