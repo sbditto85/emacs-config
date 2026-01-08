@@ -930,9 +930,10 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
 
-  (add-to-list 'transient-levels
-               '(magit-pull
-                 (transient:magit-pull:--autostash . 4)))
+  :config
+  (with-eval-after-load 'magit
+    (transient-append-suffix 'magit-pull "-A"
+      '("-a" "Autostash" "--autostash")))
   )
 
 #+end_src
