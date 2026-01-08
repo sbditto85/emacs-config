@@ -491,7 +491,7 @@ The default configuration is quite good but you can check out the [[https://gith
     "c" '(:ignore c :which-key "Comment")
     "c a" '(custom/comment-attribution :which-key "Attribute Comment")
 
-    "d" '(custom/insert-date-time :which-key "Insert Current Time")
+    "d" '(custom/append-date-time :which-key "Insert Current Time")
 
     "f" '(:ignore f :which-key "File")
     "f s" '(save-buffer :which-key "Save")
@@ -911,11 +911,23 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+begin_src emacs-lisp
 
+(defun custom/time-format ()
+  (let ((env-time-day-leading-zero (getenv "TIME_DAY_LEADING_ZERO")))
+    (if (string= env-time-day-leading-zero "off")
+        "%a %b %d %Y"
+      "%a %b %-d %Y")
+    )
+  )
+
+(defun custom/append-date-time ()
+  (interactive)
+  (evil-append 0)
+  (insert (format-time-string (custom/time-format))))
+
 (defun custom/insert-date-time ()
   (interactive)
-  ;; ## Enable once `evil-mode` is installed - Casey, Wed Nov 27 2024
-  ;; (evil-append 0)
-  (insert (format-time-string "%a %b %d %Y")))
+  (evil-append 0)
+  (insert (format-time-string (custom/time-format))))
 
 #+end_src
 
