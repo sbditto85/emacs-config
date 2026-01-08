@@ -767,6 +767,16 @@ You can call ==vterm-send-string== when the current buffer is in ==vterm-mode== 
 
 #+end_src
 
+** Path
+
+#+begin_src emacs-lisp
+
+(defun custom/projects-path ()
+  (getenv "PROJECTS_PATH")
+  )
+
+#+end_src
+
 * File Types
 
 ** Defaults
