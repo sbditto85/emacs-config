@@ -8,6 +8,7 @@
 
 * TO DO
 
+- [ ] Split leader key-bindings up into appropriate sections
 - [ ] Org capture
 - [ ] <Space>-b setup for buffer manipulation
 - [ ] <Space>-w setup for window management (split, close, etc)
