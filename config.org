@@ -576,6 +576,7 @@ The default configuration is quite good but you can check out the [[https://gith
     (setq evil-want-keybinding nil)
     (setq evil-want-C-u-scroll t)
     (setq evil-want-C-i-jump nil)
+    (setq evil-undo-system 'undo-redo)
     :config
     (evil-mode 1)
     ;; ## Remove if you get `:bind` to work above - Casey, Fri Nov 29 2024
