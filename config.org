@@ -657,6 +657,15 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+end_src
 
+** Vundo
+
+#+begin_src emacs-lisp
+
+(use-package vundo
+  :ensure t)
+
+#+end_src
+
 * Whitespace mode
 
 #+begin_src emacs-lisp
