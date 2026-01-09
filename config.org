@@ -842,6 +842,19 @@ You can call ==vterm-send-string== when the current buffer is in ==vterm-mode== 
 
 #+end_src
 
+
+* Buffer
+
+** Search
+
+Use consult to search in a buffer
+
+#+begin_src emacs-lisp
+
+(global-set-key (kbd "C-s") 'consult-line)
+
+#+end_src
+
 * File Types
 
 ** Defaults
