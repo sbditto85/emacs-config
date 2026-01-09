@@ -979,6 +979,8 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   (with-eval-after-load 'magit
     (transient-append-suffix 'magit-pull "-A"
       '("-a" "Autostash" "--autostash")))
+
+  (add-hook 'git-commit-setup-hook 'evil-insert-state)
   )
 
 #+end_src
