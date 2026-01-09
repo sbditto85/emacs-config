@@ -8,7 +8,6 @@
 
 * TO DO
 
-- [ ] Evil undo
 - [ ] Org capture
 - [ ] <Space>-b setup for buffer manipulation
 - [ ] <Space>-w setup for window management (split, close, etc)
