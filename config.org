@@ -985,6 +985,15 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+end_src
 
+* Split
+
+#+begin_src emacs-lisp
+
+(setq split-width-threshold nil)
+(setq split-height-threshold 0)
+
+#+end_src
+
 * Terminal
 
 ** Terminal Emulator (vterm)
