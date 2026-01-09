@@ -620,6 +620,10 @@ The default configuration is quite good but you can check out the [[https://gith
     ;; other faces such as `diff-added` will be used for other actions
     (evil-goggles-use-diff-faces))
 
+  (use-package evil-surround
+    :ensure t
+    :config
+    (global-evil-surround-mode 1))
 #+end_src
 
 ** Dired
