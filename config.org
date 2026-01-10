@@ -829,6 +829,18 @@ You can call ==vterm-send-string== when the current buffer is in ==vterm-mode== 
 
 #+end_src
 
+*** Find Projects In
+
+#+begin_src emacs-lisp
+
+(defun custom/find-projects-in-projects-path ()
+  (interactive)
+  (dolist (dir (split-string (custom/projects-path)))
+    (project-remember-projects-under dir))
+  )
+
+#+end_src
+
 ** Search all
 
 #+begin_src emacs-lisp
