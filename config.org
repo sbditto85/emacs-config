@@ -842,7 +842,6 @@ You can call ==vterm-send-string== when the current buffer is in ==vterm-mode== 
 
 #+end_src
 
-
 * Buffer
 
 ** Search
