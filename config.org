@@ -561,7 +561,13 @@ The default configuration is quite good but you can check out the [[https://gith
 
     "q"  '(:ignore q :which-key "quit/session")
     "q q" '(save-buffers-kill-terminal :which-key "Save and Close Emacs")
-    ))
+
+    "w" '(:ignore w :which-key "Window")
+    "w d" '(evil-window-delete :which-key "Delete")
+    "w s" '(evil-window-split :which-key "Split")
+    "w v" '(evil-window-vsplit :which-key "Vertical Split")
+    )
+  )
 
 #+end_src
 
