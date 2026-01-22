@@ -481,7 +481,8 @@ The default configuration is quite good but you can check out the [[https://gith
   :after evil
   :config
   (general-create-definer custom/leader-keys
-    :keymaps '(normal insert visual emacs)
+    :states '(normal insert visual emacs)
+    :keymaps 'override
     :prefix "SPC"
     :global-prefix "M-SPC")
 
