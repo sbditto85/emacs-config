@@ -489,6 +489,10 @@ The default configuration is quite good but you can check out the [[https://gith
   (custom/leader-keys
     ":" '(execute-extended-command :which-key "M-x")
 
+    "b" '(:ignore b :which-key "Buffer")
+    "b b" '(tabspaces-switch-to-buffer :which-key "Tabspace switch buffer")
+    "b s" '(save-buffer :which-key "Save")
+
     "c" '(:ignore c :which-key "Comment")
     "c a" '(custom/comment-attribution :which-key "Attribute Comment")
 
