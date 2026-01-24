@@ -1036,6 +1036,19 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+end_src
 
+** Diff HL
+
+Show changes in the fringe (or margin) based on the git diff
+
+#+begin_src emacs-lisp
+
+(use-package diff-hl
+  :ensure t
+  :config
+  (global-diff-hl-mode))
+
+#+end_src
+
 * Split
 
 #+begin_src emacs-lisp
