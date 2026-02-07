@@ -489,6 +489,7 @@ The default configuration is quite good but you can check out the [[https://gith
 
     (custom/leader-keys
       ":" '(execute-extended-command :which-key "M-x")
+      "." '(find-file :which-key "Find file")
 
       "b" '(:ignore b :which-key "Buffer")
       "b b" '(tabspaces-switch-to-buffer :which-key "Tabspace switch buffer")
