@@ -645,6 +645,7 @@ The default configuration is quite good but you can check out the [[https://gith
     :ensure t
     :after evil
     :config
+    (setq evil-collection-key-blacklist '("SPC"))
     (evil-collection-init))
 
   (use-package evil-escape
