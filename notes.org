@@ -9,8 +9,5 @@
 * TO DO
 
 - [ ] Org capture
-- [ ] <Space>-f setup for file related things (buffer path)
-- [ ] Force toggle vterm to open at the bottom and not to the side
 - [ ] Spelling does a better drop down then the numbers at the top
-- [ ] How to switch between tabs or handle tabs for files (and how that relates to project tabs)
-- [ ] Meta Space for leader when in insert mode
+- [ ] Have leader work in Magit (and potentially other modes)
