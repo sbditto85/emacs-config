@@ -161,6 +161,26 @@ generate the filenames. This is taken from Doom Emacs.
 
 #+end_src
 
+** Compilation
+
+*** Colors
+
+By default ANSI colors are not processed in compilation output, this enables processing and showing the colors.
+
+#+begin_src emacs-lisp
+
+  (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
+
+#+end_src
+
+*** Scrolling
+
+#+begin_src emacs-lisp
+
+(setq compilation-scroll-output t)
+
+#+end_src
+
 * Assistance
 
 ** Which Key
@@ -567,6 +587,12 @@ The default configuration is quite good but you can check out the [[https://gith
 
       "p t" '(custom/vterm-toggle-project :which-key "Terminal")
 
+      "t" '(:ignore t :which-key "Test")
+      "t r" '(:ignore r :which-key "Ruby")
+      "t r a" '(custom/run-ruby-test-automated :which-key "Automated tests")
+      "t r f" '(custom/run-ruby-test-file :which-key "File")
+      "t r s" '(custom/run-ruby-test-suite :which-key "Suite")
+
       "q"  '(:ignore q :which-key "quit/session")
       "q q" '(save-buffers-kill-terminal :which-key "Save and Close Emacs")
 
@@ -968,6 +994,27 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
         ruby-method-params-indent nil
         ruby-after-operator-indent nil
         ruby-bracketed-args-indent nil))
+
+#+end_src
+
+*** Compile
+
+#+begin_src emacs-lisp
+
+  (defun custom/run-ruby-test-file ()
+    (interactive)
+    (let ((default-directory (project-root (project-current))))
+      (compile (format "bundle exec bench %s" (file-relative-name buffer-file-name default-directory)))))
+
+  (defun custom/run-ruby-test-automated ()
+    (interactive)
+    (let ((default-directory (project-root (project-current))))
+      (compile "bundle exec bench test/automated")))
+
+  (defun custom/run-ruby-test-suite ()
+    (interactive)
+    (let ((default-directory (project-root (project-current))))
+      (compile "./test.sh")))
 
 #+end_src
 
