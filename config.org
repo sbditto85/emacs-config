@@ -500,6 +500,7 @@ The default configuration is quite good but you can check out the [[https://gith
       "d" '(custom/append-date-time :which-key "Insert Current Time")
 
       "f" '(:ignore f :which-key "File")
+      "f d" '(dired-jump :which-key "Open directory")
       "f s" '(save-buffer :which-key "Save")
       "f t" '(treemacs-find-file :which-key "Find in tree")
 
