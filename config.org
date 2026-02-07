@@ -501,6 +501,7 @@ The default configuration is quite good but you can check out the [[https://gith
 
       "f" '(:ignore f :which-key "File")
       "f d" '(dired-jump :which-key "Open directory")
+      "f p" '(custom/yank-absolute-file-path :which-key "Absolute path")
       "f s" '(save-buffer :which-key "Save")
       "f t" '(treemacs-find-file :which-key "Find in tree")
 
@@ -846,12 +847,18 @@ You can call ==vterm-send-string== when the current buffer is in ==vterm-mode== 
 
 #+begin_src emacs-lisp
 
-(defun custom/yank-project-file-path ()
-  (interactive)
-  (kill-new
-    (file-relative-name buffer-file-name (project-root (project-current))))
-  )
+  (defun custom/yank-project-file-path ()
+    (interactive)
+    (kill-new
+      (file-relative-name buffer-file-name (project-root (project-current))))
+    )
 
+  (defun custom/yank-absolute-file-path ()
+    (interactive)
+    (kill-new
+      buffer-file-name)
+    )
+  
 #+end_src
 
 ** Path
