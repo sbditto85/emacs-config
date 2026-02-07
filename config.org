@@ -501,6 +501,7 @@ The default configuration is quite good but you can check out the [[https://gith
 
       "f" '(:ignore f :which-key "File")
       "f s" '(save-buffer :which-key "Save")
+      "f t" '(treemacs-find-file :which-key "Find in tree")
 
       "g" '(:ignore g :which-key "Git")
       "g b" '(magit-blame :which-key "Blame")
@@ -555,6 +556,7 @@ The default configuration is quite good but you can check out the [[https://gith
       "p k" '(tabspaces-kill-buffers-close-workspace :which-key "Close Project & Kill Buffers")
 
       "p n" '(tab-next :which-key "Next Project")
+      "p o" '(treemacs-add-and-display-current-project-exclusively :which-key "Open Project Tree")
       "p p" '(tabspaces-open-or-create-project-and-workspace :which-key "Switch Project")
 
       "p s" '(consult-ripgrep :which-key "Search")
@@ -742,11 +744,30 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+begin_src emacs-lisp
 
-(use-package treemacs
-  :ensure t
-  :bind ("s-b" . #'treemacs)
-  :config
-  (treemacs-follow-mode))
+  (use-package treemacs
+    :ensure t
+    :bind ("s-b" . #'treemacs)
+    :config
+    (treemacs-follow-mode)
+    (treemacs-project-follow-mode)
+    )
+
+  (use-package treemacs-evil
+    :ensure t
+    :after (treemacs evil)
+    )
+
+  (use-package treemacs-tab-bar
+    :ensure t
+    :after treemacs
+    :config
+    (treemacs-set-scope-type 'Tabs)
+    )
+
+  (use-package treemacs-magit
+    :ensure t
+    :after (treemacs magit)
+    )
 
 #+end_src
 
