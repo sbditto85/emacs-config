@@ -545,6 +545,18 @@ The default configuration is quite good but you can check out the [[https://gith
       "s"  '(:ignore s :which-key "Search")
       "s p"  '(custom/search-projects :which-key "Search Projects")
 
+      "o" '(:ignore o :which-key "Org")
+      "o c" '(org-capture :which-key "Capture")
+      "o a" '(org-agenda :which-key "Agenda")
+
+      ;; Not sure about this one, but willing to try it out - Casey, Sun Feb 08 2026
+      "o l" '(org-store-link :which-key "Store link")
+
+      "o m" '(:ignore m :which-key "Mobile")
+      "o m p" '(org-mobile-push :which-key "Push")
+      "o m l" '(org-mobile-pull :which-key "Pull")
+
+
       "p"  '(:ignore p :which-key "Project")
 
       ;; ## Should these be behind a prefix? - Casey, Sun Dec 01 2024
@@ -1190,12 +1202,100 @@ After that Emacs loads without any warnings and ==vterm== works.
 
 Currently unclear how I want to setup org mode, more research is needed
 
-#+begin_src emacs-lisp :tangle no
+Template format explained:
+  - %? — where your cursor lands after selecting the template
+  - %U — inactive timestamp (doesn't show in agenda)
+  - %a — link to where you were when you triggered capture (very handy)
+  - %^{prompt} — prompts you for input (useful for custom fields)
+  - file+headline — files into a specific heading
+  - file+datetree — files under a date tree (great for journals)
 
-(use-package org-mode
-  :config
-  (setq org-src-preserve-indentation t)
-  )
+#+begin_src emacs-lisp
+
+  (use-package org
+    :config
+    (setq org-directory (or (getenv "ORG_DIRECTORY") "~/org"))
+    (setq org-default-notes-file (concat org-directory "/inbox.org"))
+    (setq org-src-preserve-indentation t)
+    (setq org-return-follows-link t)
+    (setq org-startup-indented t)        ;; visual indentation
+    (setq org-startup-folded 'content)   ;; show headings but fold bodies
+    (setq org-hide-emphasis-markers t)   ;; hide *bold* markers, show bold
+    (setq org-log-done 'time)           ;; timestamp when marking DONE
+    (setq org-log-into-drawer t)        ;; put log notes into :LOGBOOK: drawer
+    (setq org-todo-keywords
+      '((sequence "TODO(t)" "STRT(s!)" "NEXT(n)" "WAIT(w@)" "|" "DONE(d)" "CANCELLED(c@)")
+        (type "IDEA(i)")))
+    (setq org-tag-alist
+      '(("@work" . ?w) ("@home" . ?h) ("@errand" . ?e)
+        ("project" . ?p) ("someday" . ?s)))
+
+    (defun custom/org-file (name)
+      "Return full path to NAME in `org-directory'."
+      (expand-file-name name org-directory))
+
+    ;; Capture
+    (setq org-capture-templates
+      `(("t" "Todo" entry (file+headline ,(custom/org-file "inbox.org") "Tasks")
+         "* TODO %?\n  %U\n  %a" :empty-lines 1)
+
+        ("n" "Note" entry (file+headline ,(custom/org-file "inbox.org") "Notes")
+         "* %?\n  %U\n  %a" :empty-lines 1)
+
+        ("m" "Meeting" entry (file+headline ,(custom/org-file "inbox.org") "Meetings")
+         "* %? :meeting:\n  %U" :empty-lines 1)
+
+        ("j" "Journal" entry (file+datetree ,(custom/org-file "journal.org"))
+         "* %?\n  %U" :empty-lines 1)
+
+        ("l" "Link/Bookmark" entry (file+headline ,(custom/org-file "inbox.org") "Links")
+         "* %? \n  %U\n  %a" :empty-lines 1)))
+
+    ;; Agenda
+    (setq org-agenda-files (list org-directory))
+    (setq org-agenda-window-setup 'current-window)
+    (setq org-agenda-span 'day)
+    (setq org-agenda-start-with-log-mode t)
+    (setq org-agenda-custom-commands
+      '(("d" "Dashboard"
+         ((agenda "" ((org-agenda-span 'day)))
+          (todo "NEXT" ((org-agenda-overriding-header "Next Actions")))
+          (todo "WAITING" ((org-agenda-overriding-header "Waiting On")))
+          (tags-todo "inbox" ((org-agenda-overriding-header "Inbox - Needs Processing")))))
+        ("w" "Work" tags-todo "@work")
+        ("h" "Home" tags-todo "@home")))
+
+    ;; Refile
+    (setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
+    (setq org-refile-use-outline-path 'file)  ;; show full path in completion
+    (setq org-outline-path-complete-in-steps nil)  ;; works better with vertico
+    (setq org-refile-allow-creating-parent-nodes 'confirm)
+
+    ;; Mobile
+    (setq org-mobile-directory (or (getenv "ORG_DIRECTORY") "~/Dropbox/Apps/MobileOrg"))
+    (setq org-mobile-inbox-for-pull (expand-file-name "from-mobile.org" org-directory))
+    (setq org-mobile-files org-agenda-files)
+    )
+
+#+end_src
+
+*** Org Tempo
+
+#+begin_src emacs-lisp
+
+  (use-package org-tempo
+    :after org
+    )
+
+#+end_src
+
+*** Org Habit
+
+#+begin_src emacs-lisp
+
+  (use-package org-habit
+    :after org
+    )
 
 #+end_src
 
