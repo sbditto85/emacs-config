@@ -8,4 +8,5 @@
 
 * TO DO
 
+- [ ] "Temporary" Notes Buffer pop up
 - [ ] Spelling does a better drop down then the numbers at the top
