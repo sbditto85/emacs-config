@@ -8,5 +8,4 @@
 
 * TO DO
 
-- [ ] Org capture
 - [ ] Spelling does a better drop down then the numbers at the top
