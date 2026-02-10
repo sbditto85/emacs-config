@@ -831,6 +831,12 @@ Going to try jinx instead - Casey, Fri Feb 06 2026
     :after (treemacs magit)
     )
 
+  (use-package treemacs-all-the-icons
+    :ensure t
+    :config
+    (treemacs-load-theme "all-the-icons")
+    )
+
 #+end_src
 
 ** Workspaces (Tabspaces)
