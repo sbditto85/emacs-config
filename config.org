@@ -560,7 +560,6 @@ The default configuration is quite good but you can check out the [[https://gith
       "o m p" '(org-mobile-push :which-key "Push")
       "o m l" '(org-mobile-pull :which-key "Pull")
 
-
       "p"  '(:ignore p :which-key "Project")
 
       ;; ## Should these be behind a prefix? - Casey, Sun Dec 01 2024
@@ -617,6 +616,8 @@ The default configuration is quite good but you can check out the [[https://gith
       "w d" '(evil-window-delete :which-key "Delete")
       "w s" '(evil-window-split :which-key "Split")
       "w v" '(evil-window-vsplit :which-key "Vertical Split")
+
+      "z" '(jinx-correct :which-key "Correct spelling")
       )
     )
 
@@ -710,11 +711,13 @@ The default configuration is quite good but you can check out the [[https://gith
 
 * Text Editing
 
-** Spell Checking (Flyspell)
+** Spell Checking (~Flyspell~ Jinx)
 
 NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
 
-#+begin_src emacs-lisp
+Going to try jinx instead - Casey, Fri Feb 06 2026
+
+#+begin_src emacs-lisp :tangle no
 
 (use-package flyspell
   :hook ((org-mode git-commit-mode markdown-mode) . flyspell-mode)
@@ -722,6 +725,17 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   :config
   (setq flyspell-issue-message-flag nil
         flyspell-issue-welcome-flag nil))
+
+#+end_src
+
+#+begin_src emacs-lisp
+
+  (use-package jinx
+    :ensure t
+    :config
+    (global-jinx-mode)
+    (setq jinx-languages "en_US")
+    )
 
 #+end_src
 
