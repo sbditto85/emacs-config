@@ -490,6 +490,40 @@ The default configuration is quite good but you can check out the [[https://gith
 
 #+end_src
 
+
+** Modes
+
+When sharing with others the font size should be larger so its easier for them to read. When I'm solo I don't mind having the font be a bit smaller
+
+*** Sharing
+
+#+begin_src emacs-lisp
+
+(defun custom/set-sharing ()
+  (interactive)
+
+  ;; Set the font size
+  (set-face-attribute 'default nil :height 185)
+  )
+
+#+end_src
+
+*** Solo
+
+#+begin_src emacs-lisp
+
+(defun custom/set-solo ()
+  (interactive)
+
+  ;; Set the font size
+  (set-face-attribute 'default nil :height 150)
+  )
+
+;; Default to solo work
+(custom/set-solo)
+
+#+end_src
+
 * Keybinding Configuration
 
 ** Leader key (general)
