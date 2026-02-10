@@ -240,7 +240,9 @@ Modus themes are great for high contrast for easy visibility
 
 NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
 
-#+begin_src emacs-lisp
+Not clear that this is needed - Casey, Tue Feb 10 2026
+
+#+begin_src emacs-lisp :tangle no
 
 (use-package emacs
   :bind (("s-=" . #'global-text-scale-adjust)
@@ -558,6 +560,9 @@ When sharing with others the font size should be larger so its easier for them t
       "c a" '(custom/comment-attribution :which-key "Attribute Comment")
 
       "d" '(custom/append-date-time :which-key "Insert Current Time")
+
+      "e" '(:ignore e :which-key "Editor")
+      "e f" '(global-text-scale-adjust :which-key "Change Font Size")
 
       "f" '(:ignore f :which-key "File")
       "f d" '(dired-jump :which-key "Open directory")
