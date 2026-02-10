@@ -1,5 +1,21 @@
 ;;; init.el -*- lexical-binding: t; -*-
 
+;; Elpaca lock file
+(setq elpaca-lock-file (expand-file-name "elpaca-lock.el" user-emacs-directory))
+
+;;; Update process
+;;  - elpaca-fetch / elpaca-fetch-all — only downloads remote commits, does not merge or rebuild
+;;  - elpaca-merge / elpaca-merge-all — merges changes (optionally fetches first), rebuilds
+;;  - elpaca-pull / elpaca-pull-all — fetch + merge + rebuild (aliased as elpaca-update / elpaca-update-all)
+;;  So elpaca-fetch-all does work, but it only fetches — it won't merge or rebuild anything. This is actually useful for your workflow:
+;;  Safer update workflow
+;;  1. M-x elpaca-fetch-all — download all new commits without changing anything
+;;  2. M-x elpaca-log-updates — review what changed (if available), or check elpaca-manager to see which packages have pending updates
+;;  3. M-x elpaca-pull-all — actually merge and rebuild when you're ready
+;;  4. Restart Emacs, verify things work
+;;  5. M-x elpaca-write-lock-file — regenerate the lock file
+;;  6. git diff elpaca-lock.el — review and commit
+
 ;; Install Elpaca
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
