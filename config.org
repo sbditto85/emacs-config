@@ -514,6 +514,7 @@ The default configuration is quite good but you can check out the [[https://gith
       "b" '(:ignore b :which-key "Buffer")
       "b b" '(tabspaces-switch-to-buffer :which-key "Tabspace switch buffer")
       "b d" '(kill-current-buffer :which-key "Close buffer")
+      "b i" '(list-buffers :which-key "List buffers")
       "b n" '(next-buffer :which-key "Next buffer")
       "b p" '(previous-buffer :which-key "Previous buffer")
       "b s" '(save-buffer :which-key "Save")
@@ -585,6 +586,7 @@ The default configuration is quite good but you can check out the [[https://gith
       "p m 9" '((lambda () (interactive) (tab-move-to 9)) :which-key "Move To Tab 9")
 
       "p b" '(project-switch-to-buffer :which-key "Switch Buffer")
+      "p i" '(project-list-buffers :which-key "List buffers")
       "p d" '(project-dired :which-key "Directory")
 
       "p f" '(:ignore f :which-key "File")
