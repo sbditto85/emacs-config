@@ -8,6 +8,4 @@
 
 * TO DO
 
-- [ ] Increase and decrease editor text size
-- [ ] Settings for sharing vs solo work
 - [ ] Change casing of a selected region or current word
