@@ -1249,8 +1249,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 (defun custom/comment-attribution ()
   (interactive)
-  ;; ## Enable once `evil-mode` is installed - Casey, Wed Nov 27 2024
-  ;; (evil-append 0)
+  (evil-append 0)
   (insert " - " (custom/author) ", ")
   (custom/insert-date-time))
 
