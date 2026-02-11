@@ -798,6 +798,55 @@ Going to try jinx instead - Casey, Fri Feb 06 2026
 
 #+end_src
 
+** Casing
+
+Claude code generated a function to be called when highlighting a region
+
+#+begin_src emacs-lisp
+
+(defun custom/split-into-words (text)
+  "Split TEXT into words, handling camelCase, snake_case, kebab-case, etc."
+  (let ((parts '())
+        (current "")
+        (chars (string-to-list text)))
+    (dolist (c chars)
+      (cond
+       ((member c '(?_ ?- ?\s ?\t))
+        (unless (string-empty-p current)
+          (push current parts)
+          (setq current "")))
+       ((and (>= c ?A) (<= c ?Z) (not (string-empty-p current)))
+        (push current parts)
+        (setq current (string c)))
+       (t
+        (setq current (concat current (string c))))))
+    (unless (string-empty-p current)
+      (push current parts))
+    (nreverse parts)))
+
+(defun custom/change-case-region (beg end)
+  "Change the casing of the region to a chosen style."
+  (interactive "r")
+  (let* ((text (buffer-substring-no-properties beg end))
+         (words (custom/split-into-words text))
+         (choice (completing-read "Case: "
+                   '("kebab-case" "snake_case" "camelCase" "PascalCase")))
+         (result
+          (pcase choice
+            ("kebab-case"
+             (mapconcat #'downcase words "-"))
+            ("snake_case"
+             (mapconcat #'downcase words "_"))
+            ("camelCase"
+             (concat (downcase (car words))
+                     (mapconcat #'capitalize (cdr words) "")))
+            ("PascalCase"
+             (mapconcat #'capitalize words "")))))
+    (delete-region beg end)
+    (insert result)))
+
+#+end_src
+
 * Whitespace mode
 
 #+begin_src emacs-lisp
