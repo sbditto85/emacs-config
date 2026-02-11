@@ -642,6 +642,9 @@ When sharing with others the font size should be larger so its easier for them t
 
       "p t" '(custom/vterm-toggle-project :which-key "Terminal")
 
+      "r" '(:ignore r :which-key "Region")
+      "r c" '(custom/change-case-region :which-key "Change Casing")
+
       "t" '(:ignore t :which-key "Test")
       "t r" '(:ignore r :which-key "Ruby")
       "t r a" '(custom/run-ruby-test-automated :which-key "Automated tests")
