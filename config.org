@@ -585,8 +585,9 @@ When sharing with others the font size should be larger so its easier for them t
       "h s" '(describe-symbol :which-key "Symbol")
       "h v" '(describe-variable :which-key "Variable")
 
-      "s"  '(:ignore s :which-key "Search")
-      "s p"  '(custom/search-projects :which-key "Search Projects")
+      "s" '(:ignore s :which-key "Search")
+      "s d" '(custom/search-in-directory :which-key "Search Directory")
+      "s p" '(custom/search-projects :which-key "Search Projects")
 
       "o" '(:ignore o :which-key "Org")
       "o c" '(org-capture :which-key "Capture")
@@ -1041,6 +1042,18 @@ You can call ==vterm-send-string== when the current buffer is in ==vterm-mode== 
   (dolist (dir (split-string (custom/projects-path)))
     (project-remember-projects-under dir))
   )
+
+#+end_src
+
+** Search Directory
+
+#+begin_src emacs-lisp
+
+(defun custom/search-in-directory ()
+  "Run ripgrep in a prompted directory."
+  (interactive)
+  (let ((directory (read-directory-name "Search in: ")))
+    (consult-ripgrep directory)))
 
 #+end_src
 
