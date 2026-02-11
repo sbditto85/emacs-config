@@ -940,7 +940,11 @@ Claude code generated a function to be called when highlighting a region
 
   :init
   (setq tabspaces-session-file (no-littering-expand-var-file-name "tabsession.el")
-        tabspaces-project-switch-commands #'project-find-file)
+        ;; Consider just turning off tabspace sessions - Casey, Tue Feb 10 2026
+        ;; tabspaces-session nil
+        tabspaces-project-switch-commands #'project-find-file
+        tabspaces-session-project-session-store (no-littering-expand-var-file-name "tabspaces-sessions/")
+        )
 
   (tabspaces-mode)
   (global-tab-line-mode -1)
@@ -1015,7 +1019,7 @@ You can call ==vterm-send-string== when the current buffer is in ==vterm-mode== 
     (kill-new
       buffer-file-name)
     )
-  
+
 #+end_src
 
 ** Path
