@@ -8,4 +8,7 @@
 
 * TO DO
 
-- [ ] Change casing of a selected region or current word
+- [ ] Whitespace is removed on save (minus markdown files)
+- [ ] Opening a project seems to carry forward the last open buffer
+- [ ] Ensure spelling is engaged everywhere
+- [ ] Auto reloading files when they change outside of Emacs?
