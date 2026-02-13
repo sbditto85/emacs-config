@@ -758,7 +758,7 @@ When sharing with others the font size should be larger so its easier for them t
 
 NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 
 (use-package flyspell
   :hook ((org-mode git-commit-mode markdown-mode) . flyspell-mode)
@@ -771,15 +771,19 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 Jinx is only set to check certain parts based on the font face, but its difficult to update those for Ruby - Casey, Fri Feb 13 2026
 
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 
   (use-package jinx
     :ensure t
     :config
     (global-jinx-mode)
     (setq jinx-languages "en_US")
+
+    ;; Unset prog mode in jinx-include-faces and allow individual languages specify where they want to explude faces - Casey, Fri Feb 13 2026
+    (setf (alist-get 'prog-mode jinx-include-faces nil t) nil)
+
+    ;; Ruby
     (add-to-list 'jinx-camel-modes 'ruby-mode)
-    (setf (alist-get 'ruby-mode jinx-include-faces) nil)
     (setf (alist-get 'ruby-mode jinx-exclude-faces)
           '(font-lock-keyword-face
             font-lock-builtin-face
