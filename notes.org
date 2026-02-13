@@ -14,3 +14,4 @@
 - [ ] Auto reloading files when they change outside of Emacs?
 - [ ] Treemacs folders don't collapse
 - [ ] "jk" doesn't close Treemacs
+- [ ] Highlight unused variables (LSP?)
