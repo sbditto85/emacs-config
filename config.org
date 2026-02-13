@@ -778,6 +778,12 @@ Going to try jinx instead - Casey, Fri Feb 06 2026
     :config
     (global-jinx-mode)
     (setq jinx-languages "en_US")
+    (add-to-list 'jinx-camel-modes 'ruby-mode)
+    (setf (alist-get 'ruby-mode jinx-include-faces) nil)
+    (setf (alist-get 'ruby-mode jinx-exclude-faces)
+          '(font-lock-keyword-face
+            font-lock-builtin-face
+            font-lock-constant-face))
     )
 
 #+end_src
