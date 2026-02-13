@@ -754,13 +754,11 @@ When sharing with others the font size should be larger so its easier for them t
 
 * Text Editing
 
-** Spell Checking (~Flyspell~ Jinx)
+** Spell Checking (Flyspell)
 
 NOTE: Change the ==use-package== below to ==use-feature== if package management section above is enabled
 
-Going to try jinx instead - Casey, Fri Feb 06 2026
-
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 
 (use-package flyspell
   :hook ((org-mode git-commit-mode markdown-mode) . flyspell-mode)
@@ -771,7 +769,9 @@ Going to try jinx instead - Casey, Fri Feb 06 2026
 
 #+end_src
 
-#+begin_src emacs-lisp
+Jinx is only set to check certain parts based on the font face, but its difficult to update those for Ruby - Casey, Fri Feb 13 2026
+
+#+begin_src emacs-lisp :tangle no
 
   (use-package jinx
     :ensure t
