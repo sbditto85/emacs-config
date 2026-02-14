@@ -492,7 +492,6 @@ The default configuration is quite good but you can check out the [[https://gith
 
 #+end_src
 
-
 ** Modes
 
 When sharing with others the font size should be larger so its easier for them to read. When I'm solo I don't mind having the font be a bit smaller
@@ -886,6 +885,17 @@ Claude code generated a function to be called when highlighting a region
   (interactive)
   (evil-ex "%s/^ +$//")
   )
+
+#+end_src
+
+** Trim whitespace from the end of lines (except markdown)
+
+#+begin_src emacs-lisp
+
+  (add-hook 'before-save-hook 'delete-trailing-whitespace)
+  (add-hook 'markdown-mode-hook
+            (lambda () (setq-local before-save-hook
+                                   (remq 'delete-trailing-whitespace before-save-hook))))
 
 #+end_src
 
