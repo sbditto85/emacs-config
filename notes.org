@@ -10,8 +10,9 @@
 
 - [ ] Whitespace is removed on save (minus markdown files)
 - [ ] Opening a project seems to carry forward the last open buffer
-- [ ] Ensure spelling is engaged everywhere
+- [-] Ensure spelling is engaged everywhere
 - [ ] Auto reloading files when they change outside of Emacs?
 - [ ] Treemacs folders don't collapse
 - [ ] "jk" doesn't close Treemacs
 - [ ] Highlight unused variables (LSP?)
+- [ ] VTerm toggle opens across the bottom, not at the bottom of the current buffer
