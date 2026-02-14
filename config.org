@@ -782,6 +782,14 @@ Jinx is only set to check certain parts based on the font face, but its difficul
     ;; Unset prog mode in jinx-include-faces and allow individual languages specify where they want to explude faces - Casey, Fri Feb 13 2026
     (setf (alist-get 'prog-mode jinx-include-faces nil t) nil)
 
+    ;; Haskell
+    (add-to-list 'jinx-camel-modes 'haskell-mode)
+    (setf (alist-get 'ruby-mode jinx-exclude-faces)
+          '(font-lock-keyword-face
+            font-lock-builtin-face
+            font-lock-constant-face
+            haskell-keyword-face))
+
     ;; Ruby
     (add-to-list 'jinx-camel-modes 'ruby-mode)
     (setf (alist-get 'ruby-mode jinx-exclude-faces)
