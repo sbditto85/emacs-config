@@ -1226,8 +1226,10 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 ** Haskell
 
 #+begin_src emacs-lisp
-(use-package haskell-mode
-  :ensure t)
+
+  (use-package haskell-mode
+    :ensure t)
+
 #+end_src
 
 ** YAML
