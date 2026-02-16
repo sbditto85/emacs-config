@@ -1390,7 +1390,20 @@ After that Emacs loads without any warnings and ==vterm== works.
 
 (use-package vterm-toggle
   :ensure t
-  :after vterm)
+  :after vterm
+  :config
+  (setq vterm-toggle-fullscreen-p nil)
+  (add-to-list 'display-buffer-alist
+               '((lambda (buffer-or-name _)
+                   (let ((buffer (get-buffer buffer-or-name)))
+                     (when buffer
+                       (with-current-buffer buffer
+                         (or (equal major-mode 'vterm-mode)
+                             (string-prefix-p vterm-buffer-name (buffer-name buffer)))))))
+                 (display-buffer-reuse-window display-buffer-at-bottom)
+                 (reusable-frames . visible)
+                 (window-height . 0.3)))
+  )
 
 (defun custom/vterm-toggle-project ()
   (interactive)
