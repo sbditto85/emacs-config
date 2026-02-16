@@ -1190,7 +1190,8 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 #+begin_src emacs-lisp
 
 (use-package ruby-mode
-  :hook (ruby-mode . corfu-mode)
+  :hook ((ruby-mode . corfu-mode)
+         (ruby-mode . flymake-mode))
   ;; ## Enable this if Ripgrep capf is enabled above - Casey, Wed Nov 27 2024
   ;; :capf capf-dabbrev-ripgrep
   :config
