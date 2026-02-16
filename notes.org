@@ -7,5 +7,3 @@
 #+end_src
 
 * TO DO
-
-- [ ] Opening a project seems to carry forward the last open buffer
