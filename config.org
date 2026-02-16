@@ -713,7 +713,9 @@ When sharing with others the font size should be larger so its easier for them t
     :after evil
     :config
     (evil-escape-mode)
-    (setq-default evil-escape-key-sequence "jk"))
+    (setq-default evil-escape-key-sequence "jk"
+                  evil-escape-excluded-major-modes '(treemacs-mode))
+    )
 
   (use-package evil-goggles
     :ensure t
