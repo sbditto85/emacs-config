@@ -934,6 +934,7 @@ Claude code generated a function to be called when highlighting a region
     :config
     (treemacs-follow-mode)
     (treemacs-project-follow-mode)
+    (setq treemacs-collapse-dirs 0)
     )
 
   (use-package treemacs-evil
