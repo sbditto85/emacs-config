@@ -213,6 +213,18 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 * User Interface
 
+** Scrolling
+
+From the help text on scroll-conservatively:
+If the value is greater than 100, redisplay will never recenter point[...]
+
+#+begin_src emacs-lisp
+
+  (setq scroll-conservatively 101
+        scroll-margin 0)
+
+#+end_src
+
 ** Color Theme
 
 Modus themes are great for high contrast for easy visibility
