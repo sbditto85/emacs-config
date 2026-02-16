@@ -293,7 +293,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
   :config
   (setq tab-bar-show t
-        tab-bar-new-tab-choice t
+        tab-bar-new-tab-choice "*scratch*"
         tab-bar-new-button nil
         tab-bar-close-button-show nil
         tab-bar-new-tab-to 'rightmost
