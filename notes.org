@@ -11,5 +11,4 @@
 - [ ] Opening a project seems to carry forward the last open buffer
 - [ ] Treemacs folders don't collapse
 - [ ] "jk" doesn't close Treemacs
-- [ ] Highlight unused variables (LSP?)
 - [ ] VTerm toggle opens across the bottom, not at the bottom of the current buffer
