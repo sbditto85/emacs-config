@@ -1299,6 +1299,16 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+end_src
 
+** Language Server Protocol (Eglot)
+
+#+begin_src emacs-lisp
+
+  (use-package eglot
+    :hook ((haskell-mode . eglot-ensure))
+    )
+
+#+end_src
+
 * Version Control
 
 ** Magit
