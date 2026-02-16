@@ -9,6 +9,3 @@
 * TO DO
 
 - [ ] Opening a project seems to carry forward the last open buffer
-- [ ] Treemacs folders don't collapse
-- [ ] "jk" doesn't close Treemacs
-- [ ] VTerm toggle opens across the bottom, not at the bottom of the current buffer
