@@ -646,6 +646,10 @@ When sharing with others the font size should be larger so its easier for them t
       "r c" '(custom/change-case-region :which-key "Change Casing")
 
       "t" '(:ignore t :which-key "Test")
+      "t h" '(:ignore r :which-key "Haskell")
+      "t h a" '(custom/run-haskell-test-automated :which-key "Automated tests")
+      "t h f" '(custom/run-haskell-test-file :which-key "File")
+      "t h s" '(custom/run-haskell-test-suite :which-key "Suite")
       "t r" '(:ignore r :which-key "Ruby")
       "t r a" '(custom/run-ruby-test-automated :which-key "Automated tests")
       "t r f" '(custom/run-ruby-test-file :which-key "File")
@@ -1233,6 +1237,27 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
   (use-package haskell-mode
     :ensure t)
+
+#+end_src
+
+*** Compile
+
+#+begin_src emacs-lisp
+
+  (defun custom/run-haskell-test-file ()
+    (interactive)
+    (let ((default-directory (project-root (project-current))))
+      (compile (format "stack test -- %s" (file-relative-name buffer-file-name default-directory)))))
+
+  (defun custom/run-haskell-test-automated ()
+    (interactive)
+    (let ((default-directory (project-root (project-current))))
+      (compile "stack test")))
+
+  (defun custom/run-haskell-test-suite ()
+    (interactive)
+    (let ((default-directory (project-root (project-current))))
+      (compile "./test.sh")))
 
 #+end_src
 
