@@ -7,3 +7,11 @@
 #+end_src
 
 * TO DO
+
+- [ ] Format DOOM Mode like to be more minimal
+  - [ ] Disable for Treemacs and potentially other modes
+- [ ] Creating a new buffer
+- [ ] Ensure that spacing is setup to be 2 spaces by default
+- [ ] Is Smerge mode enabled in diffs?
+- [ ] Add "--word-diff-regex=" to magit diff
+  - git diff --word-diff-regex='[a-zA-Z0-9_]+' -w {}
