@@ -499,8 +499,21 @@ The default configuration is quite good but you can check out the [[https://gith
 
 (use-package doom-modeline
   :ensure t
-  :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 15)))
+  :init
+  (doom-modeline-mode 1)
+  :custom
+  (doom-modeline-height 15)
+  :config
+  (setq doom-modeline-buffer-encoding nil)
+  (setq doom-modeline-env-version nil)
+  (setq doom-modeline-vcs-max-length 10)
+  (setq doom-modeline-persp-name nil)
+  (setq doom-modeline-workspace-name nil)
+  (setq doom-modeline-percent-position nil)
+  (setq doom-modeline-time nil)
+  (setq doom-modeline-battery nil)
+  (setq doom-modeline-buffer-file-name-style 'truncate-with-project)
+  )
 
 #+end_src
 
