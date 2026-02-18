@@ -563,6 +563,7 @@ When sharing with others the font size should be larger so its easier for them t
       "b d" '(kill-current-buffer :which-key "Close buffer")
       "b i" '(list-buffers :which-key "List buffers")
       "b n" '(next-buffer :which-key "Next buffer")
+      "b N" '(evil-buffer-new :which-key "New buffer")
       "b p" '(previous-buffer :which-key "Previous buffer")
       "b s" '(save-buffer :which-key "Save")
       "b x" '(custom/toggle-scratch :which-key "Persistent Scratch")
