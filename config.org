@@ -952,6 +952,7 @@ Claude code generated a function to be called when highlighting a region
     (treemacs-follow-mode)
     (treemacs-project-follow-mode)
     (setq treemacs-collapse-dirs 0)
+    (add-hook 'treemacs-mode-hook (lambda () (setq mode-line-format nil)))
     )
 
   (use-package treemacs-evil
