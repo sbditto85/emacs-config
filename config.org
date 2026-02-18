@@ -1372,6 +1372,8 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
       '("-a" "Autostash" "--autostash")))
 
   (add-hook 'git-commit-setup-hook 'evil-insert-state)
+
+  (setq magit-diff-refine-hunk 'all)
   )
 
 #+end_src
