@@ -7,3 +7,5 @@
 #+end_src
 
 * TO DO
+
+- [ ] Window switching key bindings taking precedence in Magit and Treemacs
