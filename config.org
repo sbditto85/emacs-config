@@ -584,6 +584,10 @@ When sharing with others the font size should be larger so its easier for them t
 
       "g" '(:ignore g :which-key "Git")
       "g b" '(magit-blame :which-key "Blame")
+      "g d" '(:ignore d :which-key "Diff")
+      "g d w" '(:ignore w :which-key "Word")
+      "g d w p" '(custom/run-word-git-diff :which-key "Project")
+      "g d w f" '(custom/run-word-git-diff-file :which-key "File")
       "g g" '(magit :which-key "Status")
       "g L" '(magit-log-buffer-file :which-key "Log file")
       "g o" '(browse-at-remote :which-key "Open at remote")
@@ -1375,6 +1379,22 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
   (setq magit-diff-refine-hunk 'all)
   )
+
+#+end_src
+
+*** Compile
+
+#+begin_src emacs-lisp
+
+  (defun custom/run-word-git-diff ()
+    (interactive)
+    (let ((default-directory (project-root (project-current))))
+      (compile "git diff --word-diff-regex='[a-zA-Z0-9_]+' -w")))
+
+  (defun custom/run-word-git-diff-file ()
+    (interactive)
+    (let ((default-directory (project-root (project-current))))
+      (compile (format "git diff --word-diff-regex='[a-zA-Z0-9_]+' -w %s" (file-relative-name buffer-file-name default-directory)))))
 
 #+end_src
 
