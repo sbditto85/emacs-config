@@ -243,12 +243,10 @@ Modus themes are great for high contrast for easy visibility
 
 (use-package window-numbering
   :ensure t
-  :after evil
   :config
   (window-numbering-mode 1)
-  (let ((alist (list (cons 'window-numbering-mode
-                             window-numbering-keymap))))
-      (push alist emulation-mode-map-alists))
+  (with-eval-after-load 'evil-collection
+      (evil-make-intercept-map window-numbering-keymap))
   )
 
 #+end_src
