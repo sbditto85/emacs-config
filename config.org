@@ -213,6 +213,14 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 * User Interface
 
+** Line wrapping
+
+#+begin_src emacs-lisp
+
+(setq-default truncate-lines t)
+
+#+end_src
+
 ** Scrolling
 
 From the help text on scroll-conservatively:
@@ -616,6 +624,9 @@ When sharing with others the font size should be larger so its easier for them t
       "h l" '(view-lossage :which-key "Previous Keys")
       "h s" '(describe-symbol :which-key "Symbol")
       "h v" '(describe-variable :which-key "Variable")
+
+      "l" '(:ignore l :which-key "Line")
+      "l w" '(visual-line-mode :which-key "Wrap Toggle")
 
       "s" '(:ignore s :which-key "Search")
       "s d" '(custom/search-in-directory :which-key "Search Directory")
