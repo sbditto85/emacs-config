@@ -1303,6 +1303,18 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   :ensure t)
 #+end_src
 
+** Rust
+
+#+begin_src emacs-lisp
+
+  (use-package rust-mode
+    :ensure t
+    :init
+    (setq rust-format-on-save t)
+    )
+
+#+end_src
+
 * Programming
 
 ** Go To Definition (Dumb Jump)
@@ -1367,7 +1379,8 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 #+begin_src emacs-lisp
 
   (use-package eglot
-    :hook ((haskell-mode . eglot-ensure))
+    :hook ((haskell-mode . eglot-ensure)
+           (rust-mode . eglot-ensure))
     )
 
 #+end_src
