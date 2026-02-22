@@ -181,6 +181,14 @@ By default ANSI colors are not processed in compilation output, this enables pro
 
 #+end_src
 
+** Ring Bell
+
+#+begin_src emacs-lisp
+
+(setq ring-bell-function 'ignore)
+
+#+end_src
+
 * Assistance
 
 ** Which Key
