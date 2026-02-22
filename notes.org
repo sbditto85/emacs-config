@@ -7,7 +7,3 @@
 #+end_src
 
 * TO DO
-
-- [ ] Turn off the bell for a window not existing (etc)
-- [ ] No line wrapping until visual-line-mode is turned on
-- [ ] VTerm popup goes across the full bottom (instead of going to treemacs if open)
