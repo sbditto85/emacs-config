@@ -988,7 +988,8 @@ Claude code generated a function to be called when highlighting a region
     :ensure t
     :bind ("s-b" . #'treemacs)
     :config
-    (treemacs-follow-mode)
+    ;; Experimenting with not having Treemacs follow the file, but using a key binding to find it in the tree if I want to know where it is - Casey, Mon Feb 23 2026
+    ;;(treemacs-follow-mode)
     (treemacs-project-follow-mode)
     (setq treemacs-collapse-dirs 0)
     (add-hook 'treemacs-mode-hook (lambda () (setq mode-line-format nil)))
