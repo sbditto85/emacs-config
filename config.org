@@ -694,6 +694,8 @@ When sharing with others the font size should be larger so its easier for them t
 
       "p t" '(custom/vterm-toggle-project :which-key "Terminal")
 
+      "p x" '(custom/project-kill-other-buffers :which-key "Kill other buffers")
+
       "r" '(:ignore r :which-key "Region")
       "r c" '(custom/change-case-region :which-key "Change Casing")
 
@@ -1156,6 +1158,22 @@ You can call ==vterm-send-string== when the current buffer is in ==vterm-mode== 
         )
      (consult-ripgrep))
   )
+
+#+end_src
+
+** Kill other buffers
+
+#+begin_src emacs-lisp
+
+(defun custom/project-kill-other-buffers ()
+  "Kill all buffers in the current project except the current one."
+  (interactive)
+  (let ((current (current-buffer))
+        (project (project-current)))
+    (when project
+      (dolist (buf (project-buffers project))
+        (unless (eq buf current)
+          (kill-buffer buf))))))
 
 #+end_src
 
