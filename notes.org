@@ -7,3 +7,5 @@
 #+end_src
 
 * TO DO
+
+- [ ] Run Ruby tests in a directory (probably have it prompt for the directory, but use the current buffer as a default)
