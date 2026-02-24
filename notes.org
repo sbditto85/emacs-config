@@ -11,3 +11,6 @@
 - [ ] Run Ruby tests in a directory (probably have it prompt for the directory, but use the current buffer as a default)
 - [ ] Collapsing and expanding single sections of a markdown file
 - [ ] Magit ignores "jk"
+- [ ] Dired with a tree view
+- [ ] Searching doesn't engage until after I've entered 3 letters, what if I want to search for "if"
+- [ ] Treemacs and searching the whole projects
