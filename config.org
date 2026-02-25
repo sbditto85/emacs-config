@@ -596,7 +596,7 @@ When sharing with others the font size should be larger so its easier for them t
       "b" '(:ignore b :which-key "Buffer")
       "b b" '(tabspaces-switch-to-buffer :which-key "Tabspace switch buffer")
       "b d" '(kill-current-buffer :which-key "Close buffer")
-      "b i" '(list-buffers :which-key "List buffers")
+      "b i" '(consult-buffer :which-key "List buffers")
       "b n" '(next-buffer :which-key "Next buffer")
       "b N" '(evil-buffer-new :which-key "New buffer")
       "b p" '(previous-buffer :which-key "Previous buffer")
