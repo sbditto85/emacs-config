@@ -365,7 +365,10 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 (use-package consult
   :ensure t
-  :bind (("C-x b" . consult-buffer)))
+  :bind (("C-x b" . consult-buffer))
+  :custom
+  (consult-async-min-input 2)
+  )
 
 #+end_src
 
