@@ -812,6 +812,25 @@ When sharing with others the font size should be larger so its easier for them t
 
 #+end_src
 
+*** Dired Subtree
+
+#+begin_src emacs-lisp
+
+  (use-package dired-subtree
+    :ensure t
+    :after dired
+    :bind (:map dired-mode-map
+           ("TAB" . dired-subtree-toggle)
+           ("<backtab>" . dired-subtree-cycle))
+    :config
+    (with-eval-after-load 'dired-subtree
+      (evil-define-key 'normal dired-mode-map
+        (kbd "TAB") #'dired-subtree-toggle
+        (kbd "S-TAB") #'dired-subtree-cycle))
+    )
+
+#+end_src
+
 * Text Editing
 
 ** Spell Checking (Flyspell)
