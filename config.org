@@ -1393,6 +1393,20 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+end_src
 
+
+** Web
+
+#+begin_src emacs-lisp
+
+  (use-package web-mode
+    :ensure t
+    :mode ("\\.haml\\'"
+           "\\.erb\\'"
+           "\\.html?\\'")
+    )
+
+#+end_src
+
 * Programming
 
 ** Go To Definition (Dumb Jump)
