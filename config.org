@@ -1288,6 +1288,12 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+begin_src emacs-lisp
 
+  (defun custom/run-ruby-install-gems ()
+    (interactive)
+    (let ((default-directory (project-root (project-current))))
+      (compile "REMOVE_GEMS=off POSTURE=development ./install-gems.sh"))
+    )
+
   (defun custom/run-ruby-test-file ()
     (interactive)
     (let ((default-directory (project-root (project-current))))
