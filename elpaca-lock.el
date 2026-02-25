@@ -148,6 +148,20 @@
                     :source "MELPA" :protocol https :inherit t :depth
                     treeless :ref
                     "3eefe68941933c8549049502007411ed2bf70387"))
+ (dired-hacks-utils :source "elpaca-menu-lock-file" :recipe
+                    (:package "dired-hacks-utils" :fetcher github
+                              :repo "Fuco1/dired-hacks" :files
+                              ("dired-hacks-utils.el") :source "MELPA"
+                              :protocol https :inherit t :depth
+                              treeless :ref
+                              "de9336f4b47ef901799fe95315fa080fa6d77b48"))
+ (dired-subtree :source "elpaca-menu-lock-file" :recipe
+                (:package "dired-subtree" :fetcher github :repo
+                          "Fuco1/dired-hacks" :files
+                          ("dired-subtree.el") :source "MELPA"
+                          :protocol https :inherit t :depth treeless
+                          :ref
+                          "de9336f4b47ef901799fe95315fa080fa6d77b48"))
  (doom-modeline :source "elpaca-menu-lock-file" :recipe
                 (:package "doom-modeline" :repo
                           "seagle0128/doom-modeline" :fetcher github
@@ -534,6 +548,19 @@
                      :source "MELPA" :protocol https :inherit t :depth
                      treeless :ref
                      "4fc893c3c9ea3f6b5099ac1b369abb3c6da40b1e"))
+ (rust-mode :source "elpaca-menu-lock-file" :recipe
+            (:package "rust-mode" :repo "rust-lang/rust-mode" :fetcher
+                      github :files
+                      ("*.el" "*.el.in" "dir" "*.info" "*.texi"
+                       "*.texinfo" "doc/dir" "doc/*.info" "doc/*.texi"
+                       "doc/*.texinfo" "lisp/*.el" "docs/dir"
+                       "docs/*.info" "docs/*.texi" "docs/*.texinfo"
+                       (:exclude ".dir-locals.el" "test.el" "tests.el"
+                                 "*-test.el" "*-tests.el" "LICENSE"
+                                 "README*" "*-pkg.el"))
+                      :source "MELPA" :protocol https :inherit t
+                      :depth treeless :ref
+                      "f68ddca5c22b94a2de7c9ce20d629cd78d60b269"))
  (s :source "elpaca-menu-lock-file" :recipe
     (:package "s" :fetcher github :repo "magnars/s.el" :files
               ("*.el" "*.el.in" "dir" "*.info" "*.texi" "*.texinfo"
@@ -595,6 +622,14 @@
                      :source "MELPA" :protocol https :inherit t :depth
                      treeless :ref
                      "2ab5a3c89fa01bbbd99de9b8986908b2bc5a7b49"))
+ (treemacs-all-the-icons :source "elpaca-menu-lock-file" :recipe
+                         (:package "treemacs-all-the-icons" :fetcher
+                                   github :repo
+                                   "Alexander-Miller/treemacs" :files
+                                   ("src/extra/treemacs-all-the-icons.el")
+                                   :source "MELPA" :protocol https
+                                   :inherit t :depth treeless :ref
+                                   "2ab5a3c89fa01bbbd99de9b8986908b2bc5a7b49"))
  (treemacs-evil :source "elpaca-menu-lock-file" :recipe
                 (:package "treemacs-evil" :fetcher github :repo
                           "Alexander-Miller/treemacs" :files
