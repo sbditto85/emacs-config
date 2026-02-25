@@ -706,6 +706,7 @@ When sharing with others the font size should be larger so its easier for them t
       "t h s" '(custom/run-haskell-test-suite :which-key "Suite")
       "t r" '(:ignore r :which-key "Ruby")
       "t r a" '(custom/run-ruby-test-automated :which-key "Automated tests")
+      "t r d" '(custom/run-ruby-test-directory :which-key "Directory")
       "t r f" '(custom/run-ruby-test-file :which-key "File")
       "t r s" '(custom/run-ruby-test-suite :which-key "Suite")
 
@@ -1290,7 +1291,18 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   (defun custom/run-ruby-test-file ()
     (interactive)
     (let ((default-directory (project-root (project-current))))
-      (compile (format "bundle exec bench %s" (file-relative-name buffer-file-name default-directory)))))
+      (compile (format "bundle exec bench %s" (file-relative-name buffer-file-name default-directory))))
+    )
+
+  (defun custom/run-ruby-test-directory ()
+    "Run all Ruby tests in a directory. Prompts for directory, defaulting to the directory of the current buffer file."
+    (interactive)
+    (let* ((default-dir (if buffer-file-name
+                            (file-name-directory buffer-file-name)
+                            default-directory))
+           (test-dir (read-directory-name "Test directory: " default-dir nil t))
+           (default-directory (project-root (project-current))))
+      (compile (format "bundle exec bench %s" test-dir))))
 
   (defun custom/run-ruby-test-automated ()
     (interactive)
