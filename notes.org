@@ -9,3 +9,5 @@
 * TO DO
 
 - [ ] Treemacs and searching the whole projects
+- [ ] Ensure that after `C-s` I can edit all found lines
+- [ ] Update consult-ripgrep-args to have max-columns be something larger than 3000
