@@ -9,9 +9,3 @@
 * TO DO
 
 - [ ] Treemacs and searching the whole projects
-- [ ] Ensure that after `C-s` I can edit all found lines
-- [ ] Update consult-ripgrep-args to have max-columns be something larger than 3000
-  - Consider updating the line length in Emacs
-  - "lib/preferred_stock_financing_web_forms/controls/questionnaire/investors_rights_agreement/covenants.rb:6:        def self.example(insurance: nil, qualified_small_business_stock_covenant: nil, has_preferred_director_approvals: nil, preferred_director_approvals: nil, sale_of_company_investor_attorney_fees: nil, right_to_conduct_activities: nil, right_to_conduct_activities_investors: nil, foreign_corrupt_"
-- [ ] Update tabs across top to have the respective number
-- [ ] wdired connected
