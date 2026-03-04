@@ -368,6 +368,8 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   :bind (("C-x b" . consult-buffer))
   :custom
   (consult-async-min-input 2)
+  ;; Ensure searches don't get truncated so that I can wgrep and edit lines safely
+  (setq consult-grep-max-columns 10000)
   )
 
 #+end_src
