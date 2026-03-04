@@ -805,6 +805,7 @@ When sharing with others the font size should be larger so its easier for them t
 
 (use-package dired
   :after evil
+  :bind (:map dired-mode-map ("C-c C-e" . wdired-change-to-wdired-mode))
   :config
   (setq dired-kill-when-opening-new-dired-buffer t)
 
