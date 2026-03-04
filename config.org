@@ -381,6 +381,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   :bind (("C-x b" . consult-buffer))
   :custom
   (consult-async-min-input 2)
+  :config
   ;; Ensure searches don't get truncated so that I can wgrep and edit lines safely
   (setq consult-grep-max-columns 10000)
   (setq consult-ripgrep-args "rg --null --line-buffered --color=never --max-columns=10000 --path-separator /   --smart-case --no-heading --with-filename --line-number --search-zip")
