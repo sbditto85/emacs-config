@@ -323,6 +323,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
          ("s-T" . #'tab-undo))
 
   :config
+  (setq tab-bar-tab-name-format-function #'custom/tab-bar-name-format)
   (setq tab-bar-show t
         tab-bar-new-tab-choice "*scratch*"
         tab-bar-new-button nil
@@ -331,6 +332,18 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
         ;; If this is the default (t) the name format function below causes
         ;; emacs to hang on boot since commit ca3763af5cc2758ec71700029558e6ecc4379ea9
         tab-bar-auto-width nil))
+
+#+end_src
+
+*** Custom Numbering for first 9 tabs
+
+#+begin_src emacs-lisp
+
+(defun custom/tab-bar-name-format (tab i)
+  (let ((name (tab-bar-tab-name-format-default tab i)))
+    (if (<= i 9)
+        (concat (number-to-string i) ")" name)
+      name)))
 
 #+end_src
 
