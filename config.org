@@ -29,6 +29,19 @@ need to be installed.
 
 #+end_src
 
+* Import Shell Environment Variables
+
+#+begin_src emacs-lisp
+
+  (use-package exec-path-from-shell
+    :ensure t
+    :config
+    (dolist (var '("PROJECTS_PATH" "AUTHOR" "ORG_DIRECTORY" "TIME_DAY_LEADING_ZERO"))
+      (add-to-list 'exec-path-from-shell-variables var))
+    (exec-path-from-shell-initialize))
+
+#+end_src
+
 * Base Settings
 
 ** General
