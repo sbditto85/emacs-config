@@ -9,3 +9,4 @@
 * TO DO
 
 - [ ] Treemacs and searching the whole projects
+- [ ] consult-find/find-dired/consult-fd
