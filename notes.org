@@ -10,3 +10,4 @@
 
 - [ ] Treemacs and searching the whole projects
 - [ ] consult-find/find-dired/consult-fd
+- [ ] (un)Commenting multiple lines does the line below
