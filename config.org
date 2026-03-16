@@ -1424,7 +1424,6 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+end_src
 
-
 ** HAML
 
 #+begin_src emacs-lisp
@@ -1442,6 +1441,20 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   (use-package web-mode
     :ensure t
     )
+
+#+end_src
+
+** DOCX Markup
+
+#+begin_src emacs-lisp
+
+(use-package document-markup-mode
+    :load-path (lambda () (expand-file-name "custom" (file-name-directory load-file-name)))
+    :mode "\\.txt\\'"
+    :bind (:map document-markup-mode-map
+           ("C-c C-b" . document-markup-wrap-bold)
+           ("C-c C-i" . document-markup-wrap-italic)
+           ("C-c C-u" . document-markup-wrap-underline)))
 
 #+end_src
 
