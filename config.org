@@ -1453,7 +1453,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
     :mode "\\.txt\\'"
     :bind (:map document-markup-mode-map
            ("C-c C-b" . document-markup-wrap-bold)
-           ("C-c C-i" . document-markup-wrap-italic)
+           ("C-c C-t" . document-markup-wrap-italic)
            ("C-c C-u" . document-markup-wrap-underline)))
 
 #+end_src
