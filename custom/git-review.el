@@ -1,16 +1,21 @@
 ;;; git-review.el --- Review git status like a pull request -*- lexical-binding: t; -*-
 
 ;; Author: Claude
-;; Version: 1.0
+;; Version: 2.0
 ;; Keywords: git, vc, tools
 ;; Package-Requires: ((emacs "28.1"))
 
 ;;; Commentary:
 
 ;; Provides a PR-review-like interface for reviewing the current git
-;; working tree.  Shows a side-by-side diff (HEAD vs working tree) with
-;; a file list at the bottom.  Supports staging files and individual
-;; hunks during review.
+;; working tree.  Shows a side-by-side diff with a file list at the
+;; bottom.  Supports staging/unstaging files and individual hunks.
+;;
+;; Each file shows one entry.  Use TAB to toggle between viewing
+;; staged vs unstaged changes when a file has both.
+;;
+;;   Unstaged view: left = index, right = worktree  (s to stage)
+;;   Staged view:   left = HEAD,  right = index     (u to unstage)
 ;;
 ;; Entry point: M-x git-review
 
@@ -62,16 +67,23 @@
   "Face for hunk boundary markers."
   :group 'git-review)
 
+(defface git-review-view-indicator-face
+  '((t :inherit font-lock-warning-face :weight bold))
+  "Face for the staged/unstaged view indicator."
+  :group 'git-review)
+
 ;; ---------------------------------------------------------------------------
 ;; Data structures
 ;; ---------------------------------------------------------------------------
 
 (cl-defstruct git-review-file
   "A file entry from git status."
-  name       ; relative path
-  status     ; symbol: modified, added, deleted, untracked, renamed
-  staged-p   ; non-nil if the file has staged changes
-  orig-name) ; original name for renames
+  name          ; relative path
+  index-status  ; status char from index column (or nil)
+  work-status   ; status char from worktree column (or nil)
+  has-staged    ; non-nil if the file has staged changes
+  has-unstaged  ; non-nil if the file has unstaged changes
+  orig-name)    ; original name for renames
 
 (cl-defstruct git-review-hunk
   "A parsed diff hunk."
@@ -90,6 +102,15 @@
 (defvar-local git-review--state nil
   "Plist holding review session state.  Stored in the file-list buffer.")
 
+(defvar-local git-review--state-buffer nil
+  "Reference to the file-list buffer that holds the state.")
+
+(defvar-local git-review--hunks nil
+  "List of hunks for the currently displayed file.")
+
+(defvar-local git-review--hunk-line-ranges nil
+  "List of (start-line . end-line) for each hunk in the right buffer.")
+
 (defvar git-review--file-list-buffer-name "*git-review-files*")
 (defvar git-review--left-buffer-name "*git-review-old*")
 (defvar git-review--right-buffer-name "*git-review-new*")
@@ -107,52 +128,46 @@
       root)))
 
 (defun git-review--parse-status (repo-root)
-  "Parse `git status --porcelain` output from REPO-ROOT into a list of `git-review-file' structs."
+  "Parse `git status --porcelain` output from REPO-ROOT.
+Returns one entry per file, tracking both staged and unstaged state."
   (let ((default-directory repo-root)
-        (output (shell-command-to-string "git status --porcelain"))
+        (output (shell-command-to-string "git status --porcelain -u"))
         files)
     (dolist (line (split-string output "\n" t))
       (when (>= (length line) 3)
-        (let* ((index-status (aref line 0))
-               (worktree-status (aref line 1))
+        (let* ((idx-char (aref line 0))
+               (wt-char (aref line 1))
                (name-part (substring line 3))
                (orig-name nil)
                (name name-part)
-               status staged-p)
+               (has-staged (memq idx-char '(?M ?A ?D ?R)))
+               (has-unstaged (memq wt-char '(?M ?D ??))))
           ;; Handle renames: "R  old -> new"
           (when (string-match "\\(.+\\) -> \\(.+\\)" name-part)
             (setq orig-name (match-string 1 name-part))
             (setq name (match-string 2 name-part)))
-          ;; Determine status from worktree column primarily
-          (cond
-           ((= worktree-status ?M) (setq status 'modified))
-           ((= worktree-status ?D) (setq status 'deleted))
-           ((= worktree-status ??) (setq status 'untracked))
-           ((= index-status ?A)    (setq status 'added) (setq staged-p t))
-           ((= index-status ?M)    (setq status 'modified) (setq staged-p t))
-           ((= index-status ?D)    (setq status 'deleted) (setq staged-p t))
-           ((= index-status ?R)    (setq status 'renamed) (setq staged-p t))
-           (t                      (setq status 'modified)))
           (push (make-git-review-file
                  :name name
-                 :status status
-                 :staged-p staged-p
+                 :index-status (unless (= idx-char ?\s) idx-char)
+                 :work-status (unless (= wt-char ?\s) wt-char)
+                 :has-staged has-staged
+                 :has-unstaged has-unstaged
                  :orig-name orig-name)
                 files))))
     (nreverse files)))
 
-(defun git-review--get-head-content (repo-root filename)
-  "Get the HEAD version of FILENAME from REPO-ROOT.  Return nil if not tracked."
-  (let* ((default-directory repo-root)
-         (output (with-temp-buffer
-                   (let ((exit-code (call-process "git" nil t nil "show" (concat "HEAD:" filename))))
-                     (if (= exit-code 0)
-                         (buffer-string)
-                       nil)))))
-    output))
+(defun git-review--get-content (repo-root ref filename)
+  "Get FILENAME content at REF from REPO-ROOT.
+REF is a git ref like \"HEAD\" or \":\" (for index).  Return nil on failure."
+  (let ((default-directory repo-root))
+    (with-temp-buffer
+      (let ((exit-code (call-process "git" nil t nil "show"
+                                     (concat ref filename))))
+        (when (= exit-code 0)
+          (buffer-string))))))
 
 (defun git-review--get-worktree-content (repo-root filename)
-  "Get the working tree version of FILENAME from REPO-ROOT.  Return nil if deleted."
+  "Get the working tree version of FILENAME from REPO-ROOT."
   (let ((full-path (expand-file-name filename repo-root)))
     (when (file-exists-p full-path)
       (with-temp-buffer
@@ -161,7 +176,7 @@
 
 (defun git-review--get-diff (repo-root filename &optional cached)
   "Get the unified diff for FILENAME in REPO-ROOT.
-If CACHED is non-nil, show the staged diff."
+If CACHED is non-nil, show the staged diff (HEAD vs index)."
   (let ((default-directory repo-root))
     (with-temp-buffer
       (if cached
@@ -198,21 +213,17 @@ If CACHED is non-nil, show the staged diff."
         current-hunk
         current-lines
         current-raw)
-    ;; Single pass through all lines
     (dolist (line lines)
       (cond
        ;; Hunk header line
        ((string-match "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@" line)
-        ;; On first @@, finalize the diff header
         (unless header-done
           (setq header-done t))
-        ;; Save previous hunk if any
         (when current-hunk
           (setf (git-review-hunk-lines current-hunk) (nreverse current-lines))
           (setf (git-review-hunk-raw current-hunk)
                 (concat diff-header (mapconcat #'identity (reverse current-raw) "\n") "\n"))
           (push current-hunk hunks))
-        ;; Start new hunk
         (setq current-hunk
               (make-git-review-hunk
                :header line
@@ -245,7 +256,6 @@ If CACHED is non-nil, show the staged diff."
           (push line current-raw))
          ((string-prefix-p "\\" line)
           (push line current-raw))))))
-    ;; Save last hunk
     (when current-hunk
       (setf (git-review-hunk-lines current-hunk) (nreverse current-lines))
       (setf (git-review-hunk-raw current-hunk)
@@ -259,14 +269,12 @@ If CACHED is non-nil, show the staged diff."
 
 (defun git-review--apply-overlays (left-buf right-buf hunks)
   "Apply diff highlighting overlays to LEFT-BUF and RIGHT-BUF based on HUNKS."
-  ;; Clear existing overlays
   (dolist (buf (list left-buf right-buf))
     (with-current-buffer buf
       (remove-overlays (point-min) (point-max) 'git-review t)))
   (dolist (hunk hunks)
     (let ((old-line (git-review-hunk-old-start hunk))
           (new-line (git-review-hunk-new-start hunk)))
-      ;; Add hunk header overlay in right buffer
       (when (> new-line 0)
         (with-current-buffer right-buf
           (git-review--add-line-overlay
@@ -298,14 +306,8 @@ If CACHED is non-nil, show the staged diff."
         (overlay-put ov 'git-review t)))))
 
 ;; ---------------------------------------------------------------------------
-;; Hunk tracking (for staging individual hunks)
+;; Hunk tracking
 ;; ---------------------------------------------------------------------------
-
-(defvar-local git-review--hunks nil
-  "List of hunks for the currently displayed file.")
-
-(defvar-local git-review--hunk-line-ranges nil
-  "List of (start-line . end-line) for each hunk in the right buffer.")
 
 (defun git-review--compute-hunk-ranges (hunks)
   "Compute the line ranges in the right (new) buffer for each hunk in HUNKS."
@@ -316,14 +318,6 @@ If CACHED is non-nil, show the staged diff."
         (push (cons start (+ start (max 1 count) -1)) ranges)))
     (nreverse ranges)))
 
-(defun git-review--hunk-at-line (line-num ranges)
-  "Return the index of the hunk at LINE-NUM given RANGES, or nil."
-  (cl-loop for range in ranges
-           for i from 0
-           when (and (>= line-num (car range))
-                     (<= line-num (cdr range)))
-           return i))
-
 ;; ---------------------------------------------------------------------------
 ;; Window layout
 ;; ---------------------------------------------------------------------------
@@ -332,25 +326,19 @@ If CACHED is non-nil, show the staged diff."
   "Create the 3-pane layout and return a plist of window references."
   (delete-other-windows)
   (let* ((list-height (max 8 (/ (window-total-height) 4)))
-         ;; Split for file list at bottom
          (top-window (selected-window))
          (bottom-window (split-window top-window (- list-height) 'below))
-         ;; Split top into left/right
          (left-window top-window)
          (right-window (split-window left-window nil 'right)))
-    ;; Create buffers
     (let ((left-buf (get-buffer-create git-review--left-buffer-name))
           (right-buf (get-buffer-create git-review--right-buffer-name))
           (list-buf (get-buffer-create git-review--file-list-buffer-name)))
-      ;; Assign buffers
       (set-window-buffer left-window left-buf)
       (set-window-buffer right-window right-buf)
       (set-window-buffer bottom-window list-buf)
-      ;; Set window parameters for identification
       (set-window-parameter left-window 'git-review-role 'left)
       (set-window-parameter right-window 'git-review-role 'right)
       (set-window-parameter bottom-window 'git-review-role 'list)
-      ;; Make windows dedicated
       (set-window-dedicated-p left-window t)
       (set-window-dedicated-p right-window t)
       (set-window-dedicated-p bottom-window t)
@@ -362,55 +350,95 @@ If CACHED is non-nil, show the staged diff."
             :list-buffer list-buf))))
 
 ;; ---------------------------------------------------------------------------
+;; View mode: staged vs unstaged
+;; ---------------------------------------------------------------------------
+
+(defun git-review--current-view (state)
+  "Return the current view mode: `staged' or `unstaged'."
+  (or (plist-get state :view-mode) 'unstaged))
+
+(defun git-review--default-view-for-file (file)
+  "Return the default view for FILE based on what changes it has."
+  (cond
+   ;; Only staged changes — show staged view
+   ((and (git-review-file-has-staged file)
+         (not (git-review-file-has-unstaged file)))
+    'staged)
+   ;; Has unstaged (or both) — show unstaged first
+   (t 'unstaged)))
+
+(defun git-review--view-label (view)
+  "Return a display string for VIEW."
+  (if (eq view 'staged) "STAGED" "UNSTAGED"))
+
+;; ---------------------------------------------------------------------------
 ;; File list rendering
 ;; ---------------------------------------------------------------------------
 
-(defun git-review--status-char (file)
-  "Return a status character for FILE."
-  (pcase (git-review-file-status file)
-    ('modified "M")
-    ('added    "A")
-    ('deleted  "D")
-    ('untracked "?")
-    ('renamed  "R")
-    (_         " ")))
+(defun git-review--status-display (file)
+  "Return a status string for FILE."
+  (let ((idx (git-review-file-index-status file))
+        (wt (git-review-file-work-status file)))
+    (format "%c%c"
+            (or idx ?\s)
+            (or wt ?\s))))
 
 (defun git-review--status-face (file)
   "Return a face for FILE's status."
-  (pcase (git-review-file-status file)
-    ('modified  'git-review-status-modified-face)
-    ('added     'git-review-status-added-face)
-    ('untracked 'git-review-status-added-face)
-    ('deleted   'git-review-status-deleted-face)
-    ('renamed   'git-review-status-modified-face)
-    (_          'default)))
+  (let ((wt (git-review-file-work-status file))
+        (idx (git-review-file-index-status file)))
+    (cond
+     ((memq wt '(?M))  'git-review-status-modified-face)
+     ((memq wt '(?D))  'git-review-status-deleted-face)
+     ((memq wt '(??))  'git-review-status-added-face)
+     ((memq idx '(?A ?R)) 'git-review-status-added-face)
+     ((memq idx '(?M)) 'git-review-status-modified-face)
+     ((memq idx '(?D)) 'git-review-status-deleted-face)
+     (t 'default))))
 
-(defun git-review--render-file-list (files current-index)
-  "Render the file list into the file list buffer.
-FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
-  (let ((buf (get-buffer git-review--file-list-buffer-name)))
+(defun git-review--render-file-list (state)
+  "Render the file list buffer from STATE."
+  (let* ((files (plist-get state :files))
+         (current-index (plist-get state :current-index))
+         (view (git-review--current-view state))
+         (buf (get-buffer git-review--file-list-buffer-name)))
     (when buf
       (with-current-buffer buf
         (let ((inhibit-read-only t))
           (erase-buffer)
-          (insert (propertize (format " %d file(s) changed\n" (length files))
+          (insert (propertize
+                   (format " %d file(s)  |  Viewing: %s  |  TAB to toggle  |  s=stage  u=unstage\n"
+                           (length files) (git-review--view-label view))
+                   'face 'font-lock-comment-face))
+          (insert (propertize " ─────────────────────────────────────────────────────────────────\n"
                               'face 'font-lock-comment-face))
-          (insert (propertize " ─────────────────────────────────────────\n"
-                              'face 'font-lock-comment-face))
-          (cl-loop for file in files
-                   for i from 0
-                   do (let* ((status-str (git-review--status-char file))
-                             (staged-str (if (git-review-file-staged-p file) "●" " "))
-                             (line (format " %s %s %s\n"
-                                          staged-str
-                                          (propertize status-str 'face (git-review--status-face file))
-                                          (propertize (git-review-file-name file)
-                                                      'face 'git-review-file-header-face))))
-                        (when (= i current-index)
-                          (setq line (propertize line 'face 'git-review-current-file-face)))
-                        (insert (propertize line 'git-review-file-index i))))
+          (cl-loop
+           for file in files
+           for i from 0
+           do (let* ((status-str (git-review--status-display file))
+                     (changes-str
+                      (cond
+                       ((and (git-review-file-has-staged file)
+                             (git-review-file-has-unstaged file))
+                        (concat (propertize "S" 'face 'git-review-status-added-face)
+                                "+"
+                                (propertize "U" 'face 'git-review-status-modified-face)))
+                       ((git-review-file-has-staged file)
+                        (propertize "S" 'face 'git-review-status-added-face))
+                       (t
+                        (propertize "U" 'face 'git-review-status-modified-face))))
+                     (line (format " %s %s %s  [%s]\n"
+                                   (propertize status-str 'face (git-review--status-face file))
+                                   (propertize (git-review-file-name file)
+                                               'face 'git-review-file-header-face)
+                                   (if (git-review-file-orig-name file)
+                                       (format "(from %s)" (git-review-file-orig-name file))
+                                     "")
+                                   changes-str)))
+                (when (= i current-index)
+                  (setq line (propertize line 'face 'git-review-current-file-face)))
+                (insert (propertize line 'git-review-file-index i))))
           (goto-char (point-min))
-          ;; Move to current file line (skip 2 header lines)
           (forward-line (+ 2 current-index)))))))
 
 ;; ---------------------------------------------------------------------------
@@ -428,63 +456,138 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
          (file (nth index files))
          (repo-root (plist-get state :repo-root))
          (filename (git-review-file-name file))
-         (status (git-review-file-status file))
+         (orig-name (git-review-file-orig-name file))
          (left-buf (plist-get state :left-buffer))
          (right-buf (plist-get state :right-buffer))
-         (mode (git-review--guess-mode filename))
-         (head-content (unless (memq status '(untracked))
-                         (git-review--get-head-content repo-root filename)))
-         (worktree-content (unless (eq status 'deleted)
-                             (git-review--get-worktree-content repo-root filename)))
-         (diff-text (if (eq status 'untracked)
-                        (git-review--get-diff-for-untracked repo-root filename)
-                      (git-review--get-diff repo-root filename)))
-         (hunks (git-review--parse-hunks diff-text)))
-    ;; Populate left buffer (HEAD version)
-    (with-current-buffer left-buf
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (if head-content
-            (insert head-content)
-          (insert (propertize "(new file)" 'face 'font-lock-comment-face)))
-        (condition-case nil
-            (funcall mode)
-          (error (fundamental-mode))))
-      (git-review-diff-mode 1)
-      (setq buffer-read-only t)
-      (setq git-review--hunks hunks)
-      (goto-char (point-min))
-      (setq-local git-review--state-buffer (plist-get state :list-buffer))
-      (when (fboundp 'evil-normal-state)
-        (evil-normal-state)))
-    ;; Populate right buffer (working tree version)
-    (with-current-buffer right-buf
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (if worktree-content
-            (insert worktree-content)
-          (insert (propertize "(deleted)" 'face 'font-lock-comment-face)))
-        (condition-case nil
-            (funcall mode)
-          (error (fundamental-mode))))
-      (git-review-diff-mode 1)
-      (setq buffer-read-only t)
-      (setq git-review--hunks hunks)
-      (setq git-review--hunk-line-ranges (git-review--compute-hunk-ranges hunks))
-      (goto-char (point-min))
-      (setq-local git-review--state-buffer (plist-get state :list-buffer))
-      (when (fboundp 'evil-normal-state)
-        (evil-normal-state)))
-    ;; Apply diff overlays
-    (git-review--apply-overlays left-buf right-buf hunks)
+         (mode (git-review--guess-mode filename)))
+    ;; Set default view for this file only when switching to a different file
+    (let ((old-index (plist-get state :current-index)))
+      (when (and (not (eql old-index index)))
+        (plist-put state :view-mode (git-review--default-view-for-file file))))
     ;; Update state
     (plist-put state :current-index index)
-    (plist-put state :current-hunks hunks)
     (plist-put state :current-hunk-index nil)
-    ;; Update file list highlight
-    (git-review--render-file-list files index)
-    ;; Scroll both buffers to the first change
-    (git-review--goto-first-change state)))
+    ;; Now show based on view mode
+    (let* ((view (git-review--current-view state))
+           (is-untracked (eql (git-review-file-work-status file) ??))
+           (head-name (or orig-name filename))
+           ;; Determine left/right content and diff based on view
+           (left-content
+            (cond
+             (is-untracked nil)
+             ((eq view 'staged)
+              ;; Staged view: left = HEAD
+              (git-review--get-content repo-root "HEAD:" head-name))
+             (t
+              ;; Unstaged view: left = index
+              (git-review--get-content repo-root ":" filename))))
+           (right-content
+            (cond
+             (is-untracked
+              (git-review--get-worktree-content repo-root filename))
+             ((eq view 'staged)
+              ;; Staged view: right = index
+              (git-review--get-content repo-root ":" filename))
+             (t
+              ;; Unstaged view: right = worktree
+              (git-review--get-worktree-content repo-root filename))))
+           (diff-text
+            (cond
+             (is-untracked
+              (git-review--get-diff-for-untracked repo-root filename))
+             ((eq view 'staged)
+              (git-review--get-diff repo-root filename t))
+             (t
+              (git-review--get-diff repo-root filename))))
+           (hunks (git-review--parse-hunks diff-text))
+           (left-label (cond
+                        (is-untracked "(new file)")
+                        ((eq view 'staged) (format "HEAD: %s" head-name))
+                        (t (format "Index: %s" filename))))
+           (right-label (cond
+                         ((eq view 'staged) (format "Index: %s" filename))
+                         (t (format "Worktree: %s" filename))))
+           (view-str (propertize
+                      (format " [%s] " (git-review--view-label view))
+                      'face 'git-review-view-indicator-face)))
+      ;; Populate left buffer
+      (with-current-buffer left-buf
+        (let ((inhibit-read-only t))
+          (erase-buffer)
+          (insert (propertize (concat view-str left-label "\n")
+                              'face 'font-lock-comment-face))
+          (insert (propertize "────────────────────────────────────\n"
+                              'face 'font-lock-comment-face))
+          (if left-content
+              (insert left-content)
+            (insert (propertize "(empty)" 'face 'font-lock-comment-face)))
+          (condition-case nil
+              (funcall mode)
+            (error (fundamental-mode))))
+        (git-review-diff-mode 1)
+        (setq buffer-read-only t)
+        (setq git-review--hunks hunks)
+        (goto-char (point-min))
+        (setq-local git-review--state-buffer (plist-get state :list-buffer))
+        (when (fboundp 'evil-normal-state)
+          (evil-normal-state)))
+      ;; Populate right buffer
+      (with-current-buffer right-buf
+        (let ((inhibit-read-only t))
+          (erase-buffer)
+          (insert (propertize (concat view-str right-label "\n")
+                              'face 'font-lock-comment-face))
+          (insert (propertize "────────────────────────────────────\n"
+                              'face 'font-lock-comment-face))
+          (if right-content
+              (insert right-content)
+            (insert (propertize "(deleted)" 'face 'font-lock-comment-face)))
+          (condition-case nil
+              (funcall mode)
+            (error (fundamental-mode))))
+        (git-review-diff-mode 1)
+        (setq buffer-read-only t)
+        (setq git-review--hunks hunks)
+        (setq git-review--hunk-line-ranges (git-review--compute-hunk-ranges hunks))
+        (goto-char (point-min))
+        (setq-local git-review--state-buffer (plist-get state :list-buffer))
+        (when (fboundp 'evil-normal-state)
+          (evil-normal-state)))
+      ;; Apply diff overlays — offset by 2 for the header lines
+      (git-review--apply-overlays-with-offset left-buf right-buf hunks 2)
+      ;; Update state
+      (plist-put state :current-hunks hunks)
+      ;; Render file list
+      (git-review--render-file-list state)
+      ;; Scroll to first change
+      (git-review--goto-first-change state))))
+
+(defun git-review--apply-overlays-with-offset (left-buf right-buf hunks header-lines)
+  "Apply diff overlays to LEFT-BUF and RIGHT-BUF for HUNKS.
+HEADER-LINES is the number of header lines to offset by."
+  (dolist (buf (list left-buf right-buf))
+    (with-current-buffer buf
+      (remove-overlays (point-min) (point-max) 'git-review t)))
+  (dolist (hunk hunks)
+    (let ((old-line (+ header-lines (git-review-hunk-old-start hunk)))
+          (new-line (+ header-lines (git-review-hunk-new-start hunk))))
+      (when (> (git-review-hunk-new-start hunk) 0)
+        (with-current-buffer right-buf
+          (git-review--add-line-overlay (max 1 new-line) 'git-review-hunk-header-face)))
+      (dolist (entry (git-review-hunk-lines hunk))
+        (let ((type (car entry)))
+          (cond
+           ((eq type 'removed)
+            (with-current-buffer left-buf
+              (git-review--add-line-overlay old-line 'git-review-removed-face))
+            (cl-incf old-line))
+           ((eq type 'added)
+            (with-current-buffer right-buf
+              (git-review--add-line-overlay new-line 'git-review-added-face))
+            (cl-incf new-line))
+           ((eq type 'context)
+            (cl-incf old-line)
+            (cl-incf new-line))))))))
 
 (defun git-review--goto-first-change (state)
   "Scroll to the first changed line in the current file."
@@ -493,24 +596,25 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
       (git-review--scroll-to-hunk state 0))))
 
 ;; ---------------------------------------------------------------------------
-;; Staging
+;; Staging / Unstaging
 ;; ---------------------------------------------------------------------------
 
 (defun git-review--stage-file-at-index (state index)
-  "Stage the file at INDEX.  STATE is the review session plist."
+  "Stage the file at INDEX."
   (let* ((files (plist-get state :files))
          (file (nth index files))
          (repo-root (plist-get state :repo-root))
          (default-directory repo-root)
-         (filename (git-review-file-name file)))
-    (if (eq (git-review-file-status file) 'deleted)
+         (filename (git-review-file-name file))
+         (wt (git-review-file-work-status file)))
+    (if (eql wt ?D)
         (call-process "git" nil nil nil "rm" "--" filename)
       (call-process "git" nil nil nil "add" "--" filename))
     (message "Staged: %s" filename)
     (git-review--refresh state)))
 
 (defun git-review--unstage-file-at-index (state index)
-  "Unstage the file at INDEX.  STATE is the review session plist."
+  "Unstage the file at INDEX."
   (let* ((files (plist-get state :files))
          (file (nth index files))
          (repo-root (plist-get state :repo-root))
@@ -520,11 +624,13 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
     (message "Unstaged: %s" filename)
     (git-review--refresh state)))
 
-(defun git-review--stage-hunk-at-point (state)
-  "Stage the current hunk.  STATE is the review session plist."
+(defun git-review--apply-hunk-patch (state reverse-p)
+  "Apply or reverse the current hunk.
+If REVERSE-P, reverse the patch (unstage)."
   (let* ((hunks (plist-get state :current-hunks))
          (hunk-index (plist-get state :current-hunk-index))
-         (repo-root (plist-get state :repo-root)))
+         (repo-root (plist-get state :repo-root))
+         (action (if reverse-p "Unstaged" "Staged")))
     (if (or (null hunk-index) (null hunks))
         (message "No hunk selected — navigate to a hunk first with ]c")
       (let* ((hunk (nth hunk-index hunks))
@@ -535,11 +641,14 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
         (unwind-protect
             (progn
               (with-current-buffer err-buf (erase-buffer))
-              (let ((exit-code (call-process "git" nil err-buf nil
-                                             "apply" "--cached" "--" temp-file)))
+              (let* ((args (if reverse-p
+                               (list "apply" "--cached" "--reverse" "--" temp-file)
+                             (list "apply" "--cached" "--" temp-file)))
+                     (exit-code (apply #'call-process "git" nil err-buf nil args)))
                 (if (= exit-code 0)
-                    (message "Staged hunk %d/%d" (1+ hunk-index) (length hunks))
-                  (message "Failed to stage hunk: %s"
+                    (message "%s hunk %d/%d" action (1+ hunk-index) (length hunks))
+                  (message "Failed to %s hunk: %s"
+                           (downcase action)
                            (string-trim (with-current-buffer err-buf (buffer-string)))))))
           (delete-file temp-file))
         (git-review--refresh state)))))
@@ -568,11 +677,13 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
   (let* ((hunks (plist-get state :current-hunks))
          (hunk (nth hunk-index hunks))
          (right-win (plist-get state :right-window))
-         (left-win (plist-get state :left-window)))
+         (left-win (plist-get state :left-window))
+         ;; Account for 2 header lines in the buffers
+         (offset 2))
     (when hunk
       (plist-put state :current-hunk-index hunk-index)
-      (let ((new-line (git-review-hunk-new-start hunk))
-            (old-line (git-review-hunk-old-start hunk)))
+      (let ((new-line (+ offset (git-review-hunk-new-start hunk)))
+            (old-line (+ offset (git-review-hunk-old-start hunk))))
         (when (and right-win (window-live-p right-win))
           (with-selected-window right-win
             (goto-char (point-min))
@@ -583,10 +694,12 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
             (goto-char (point-min))
             (forward-line (1- old-line))
             (recenter 3))))
-      (message "Hunk %d/%d" (1+ hunk-index) (length hunks)))))
+      (let* ((view (git-review--current-view state))
+             (view-str (git-review--view-label view)))
+        (message "Hunk %d/%d  [%s]" (1+ hunk-index) (length hunks) view-str)))))
 
 (defun git-review--next-hunk (state)
-  "Move to the next hunk in the current file."
+  "Move to the next hunk."
   (let* ((hunks (plist-get state :current-hunks))
          (cur (or (plist-get state :current-hunk-index) -1))
          (next (1+ cur)))
@@ -595,12 +708,29 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
       (git-review--scroll-to-hunk state next))))
 
 (defun git-review--prev-hunk (state)
-  "Move to the previous hunk in the current file."
+  "Move to the previous hunk."
   (let* ((cur (or (plist-get state :current-hunk-index) 0))
          (prev (1- cur)))
     (if (< prev 0)
         (message "No previous hunk")
       (git-review--scroll-to-hunk state prev))))
+
+(defun git-review--toggle-view (state)
+  "Toggle between staged and unstaged view for the current file."
+  (let* ((files (plist-get state :files))
+         (index (plist-get state :current-index))
+         (file (nth index files))
+         (current (git-review--current-view state)))
+    (let ((target (cond
+                   ((and (git-review-file-has-staged file)
+                         (git-review-file-has-unstaged file))
+                    (if (eq current 'staged) 'unstaged 'staged))
+                   ((git-review-file-has-staged file) 'staged)
+                   ((git-review-file-has-unstaged file) 'unstaged))))
+      (if (eq target current)
+          (message "File only has %s changes" (git-review--view-label current))
+        (plist-put state :view-mode target)
+        (git-review--show-file state index)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Refresh
@@ -610,13 +740,28 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
   "Re-read git status and refresh the display."
   (let* ((repo-root (plist-get state :repo-root))
          (old-index (plist-get state :current-index))
+         (old-view (plist-get state :view-mode))
          (new-files (git-review--parse-status repo-root)))
     (plist-put state :files new-files)
     (if (null new-files)
         (progn
           (message "No more changes to review")
           (git-review--quit state))
-      (let ((idx (min old-index (1- (length new-files)))))
+      (let* ((idx (min old-index (1- (length new-files))))
+             (file (nth idx new-files))
+             ;; Auto-switch view if the current view no longer has changes
+             (view (cond
+                    ((and (eq old-view 'unstaged)
+                          (not (git-review-file-has-unstaged file))
+                          (git-review-file-has-staged file))
+                     'staged)
+                    ((and (eq old-view 'staged)
+                          (not (git-review-file-has-staged file))
+                          (git-review-file-has-unstaged file))
+                     'unstaged)
+                    (t old-view))))
+        (plist-put state :view-mode view)
+        (plist-put state :current-index idx)
         (git-review--show-file state idx)))))
 
 ;; ---------------------------------------------------------------------------
@@ -626,16 +771,13 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
 (defun git-review--quit (state)
   "Quit the review session and restore windows."
   (let ((saved-config (plist-get state :saved-window-config)))
-    ;; Kill review buffers
     (dolist (name (list git-review--left-buffer-name
                         git-review--right-buffer-name
                         git-review--file-list-buffer-name))
       (when-let ((buf (get-buffer name)))
-        ;; Un-dedicate windows first
         (dolist (win (get-buffer-window-list buf nil t))
           (set-window-dedicated-p win nil))
         (kill-buffer buf)))
-    ;; Restore window configuration
     (when saved-config
       (set-window-configuration saved-config))
     (message "Git review session ended")))
@@ -647,14 +789,11 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
 (defun git-review--get-state ()
   "Get the review state from the current context."
   (cond
-   ;; We're in the file list buffer
    (git-review--state git-review--state)
-   ;; We're in a diff buffer that knows about the list buffer
    ((and (boundp 'git-review--state-buffer)
          git-review--state-buffer
          (buffer-live-p git-review--state-buffer))
     (buffer-local-value 'git-review--state git-review--state-buffer))
-   ;; Try to find the file list buffer
    (t (when-let ((buf (get-buffer git-review--file-list-buffer-name)))
         (buffer-local-value 'git-review--state buf)))))
 
@@ -663,13 +802,13 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
 ;; ---------------------------------------------------------------------------
 
 (defun git-review-next-file ()
-  "Move to the next file in the review."
+  "Move to the next file."
   (interactive)
   (when-let ((state (git-review--get-state)))
     (git-review--next-file state)))
 
 (defun git-review-prev-file ()
-  "Move to the previous file in the review."
+  "Move to the previous file."
   (interactive)
   (when-let ((state (git-review--get-state)))
     (git-review--prev-file state)))
@@ -699,13 +838,25 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
     (git-review--unstage-file-at-index state (plist-get state :current-index))))
 
 (defun git-review-stage-hunk ()
-  "Stage the hunk at point."
+  "Stage the current hunk."
   (interactive)
   (when-let ((state (git-review--get-state)))
-    (git-review--stage-hunk-at-point state)))
+    (git-review--apply-hunk-patch state nil)))
+
+(defun git-review-unstage-hunk ()
+  "Unstage the current hunk."
+  (interactive)
+  (when-let ((state (git-review--get-state)))
+    (git-review--apply-hunk-patch state t)))
+
+(defun git-review-toggle-view ()
+  "Toggle between staged and unstaged view."
+  (interactive)
+  (when-let ((state (git-review--get-state)))
+    (git-review--toggle-view state)))
 
 (defun git-review-goto-file ()
-  "Visit the file at point in the file list."
+  "Jump to the file at point in the file list."
   (interactive)
   (when-let ((state (git-review--get-state)))
     (let ((index (get-text-property (point) 'git-review-file-index)))
@@ -755,7 +906,9 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
     (define-key map (kbd "q") #'git-review-quit)
     (define-key map (kbd "s") #'git-review-stage-hunk)
     (define-key map (kbd "S") #'git-review-stage-file)
-    (define-key map (kbd "u") #'git-review-unstage-file)
+    (define-key map (kbd "u") #'git-review-unstage-hunk)
+    (define-key map (kbd "U") #'git-review-unstage-file)
+    (define-key map (kbd "TAB") #'git-review-toggle-view)
     (define-key map (kbd "]") #'git-review-next-hunk)
     (define-key map (kbd "[") #'git-review-prev-hunk)
     (define-key map (kbd "n") #'git-review-next-file)
@@ -786,6 +939,7 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
     (define-key map (kbd "s") #'git-review-stage-file)
     (define-key map (kbd "S") #'git-review-stage-file)
     (define-key map (kbd "u") #'git-review-unstage-file)
+    (define-key map (kbd "TAB") #'git-review-toggle-view)
     (define-key map (kbd "]") #'git-review-next-hunk)
     (define-key map (kbd "[") #'git-review-prev-hunk)
     (define-key map (kbd "g") #'git-review-refresh)
@@ -810,6 +964,7 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
     (kbd "RET") #'git-review-goto-file
     (kbd "s")   #'git-review-stage-file
     (kbd "u")   #'git-review-unstage-file
+    (kbd "TAB") #'git-review-toggle-view
     (kbd "]c")  #'git-review-next-hunk
     (kbd "[c")  #'git-review-prev-hunk
     (kbd "gr")  #'git-review-refresh
@@ -820,7 +975,9 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
     (kbd "q")   #'git-review-quit
     (kbd "s")   #'git-review-stage-hunk
     (kbd "S")   #'git-review-stage-file
-    (kbd "u")   #'git-review-unstage-file
+    (kbd "u")   #'git-review-unstage-hunk
+    (kbd "U")   #'git-review-unstage-file
+    (kbd "TAB") #'git-review-toggle-view
     (kbd "]c")  #'git-review-next-hunk
     (kbd "[c")  #'git-review-prev-hunk
     (kbd "n")   #'git-review-next-file
@@ -837,7 +994,9 @@ FILES is a list of `git-review-file', CURRENT-INDEX is the selected index."
 (defun git-review ()
   "Start a git review session for the current repository.
 Shows all changed, staged, and untracked files in a PR-review-like
-interface with side-by-side diffs and a file list."
+interface with side-by-side diffs and a file list.
+
+Use TAB to toggle between staged and unstaged views per file."
   (interactive)
   (let* ((repo-root (git-review--repo-root))
          (files (git-review--parse-status repo-root)))
@@ -847,17 +1006,16 @@ interface with side-by-side diffs and a file list."
            (layout (git-review--setup-layout))
            (state (append layout
                           (list :files files
-                                :current-index 0
+                                :current-index nil
                                 :repo-root repo-root
                                 :saved-window-config saved-config
-                                :current-hunks nil))))
-      ;; Set up the file list buffer with the mode and state
+                                :current-hunks nil
+                                :current-hunk-index nil
+                                :view-mode nil))))
       (with-current-buffer (plist-get layout :list-buffer)
         (git-review-mode)
         (setq git-review--state state))
-      ;; Show first file
       (git-review--show-file state 0)
-      ;; Focus the file list
       (select-window (plist-get layout :list-window)))))
 
 (provide 'git-review)
