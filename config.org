@@ -656,6 +656,7 @@ When sharing with others the font size should be larger so its easier for them t
       "g g" '(magit :which-key "Status")
       "g L" '(magit-log-buffer-file :which-key "Log file")
       "g o" '(browse-at-remote :which-key "Open at remote")
+      "g r" '(git-review :which-key "Review")
 
       "h" '(:ignore h :which-key "Help")
       "h a" '(apropos :which-key "All")
@@ -1551,6 +1552,16 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
   (setq magit-diff-refine-hunk 'all)
   )
+
+#+end_src
+
+*** Git Review
+
+#+begin_src emacs-lisp
+
+(use-package git-review
+    :load-path (lambda () (expand-file-name "custom" user-emacs-directory))
+    :commands (git-review))
 
 #+end_src
 
