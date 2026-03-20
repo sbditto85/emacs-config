@@ -1450,7 +1450,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 #+begin_src emacs-lisp
 
 (use-package document-markup-mode
-    :load-path (lambda () (expand-file-name "custom" (file-name-directory load-file-name)))
+    :load-path (lambda () (expand-file-name "custom" user-emacs-directory))
     :mode "\\.txt\\'"
     :bind (:map document-markup-mode-map
            ("C-c C-b" . document-markup-wrap-bold)
