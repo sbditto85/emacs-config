@@ -14,3 +14,4 @@
 - [ ] When getting a file path (or other value) echo it out to the bottom of the screen
 - [ ] (setq magit-status-show-untracked-files 'all)
 - [ ] Dired you know what I mean variable `(setq dired-dwim-target t)`
+- [ ] Casing of a region to title case
