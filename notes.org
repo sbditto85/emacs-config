@@ -15,3 +15,4 @@
 - [ ] (setq magit-status-show-untracked-files 'all)
 - [ ] Dired you know what I mean variable `(setq dired-dwim-target t)`
 - [ ] Casing of a region to title case
+- [ ] For the git review have it highlight which words changed like smerge
