@@ -1161,15 +1161,14 @@ You can call ==vterm-send-string== when the current buffer is in ==vterm-mode== 
 
   (defun custom/yank-project-file-path ()
     (interactive)
-    (kill-new
-      (file-relative-name buffer-file-name (project-root (project-current))))
-    )
+    (let ((path (file-relative-name buffer-file-name (project-root (project-current)))))
+      (kill-new path)
+      (message "%s" path)))
 
   (defun custom/yank-absolute-file-path ()
     (interactive)
-    (kill-new
-      buffer-file-name)
-    )
+    (kill-new buffer-file-name)
+    (message "%s" buffer-file-name))
 
 #+end_src
 
