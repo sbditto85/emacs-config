@@ -1561,6 +1561,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   (add-hook 'git-commit-setup-hook 'evil-insert-state)
 
   (setq magit-diff-refine-hunk 'all)
+  (setq magit-status-show-untracked-files 'all)
   )
 
 #+end_src
