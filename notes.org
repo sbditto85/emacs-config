@@ -10,7 +10,6 @@
 
 - [ ] Treemacs and searching the whole projects
 - [ ] consult-find/find-dired/consult-fd
-- [ ] (un)Commenting multiple lines does the line below
 - [ ] When getting a file path (or other value) echo it out to the bottom of the screen
 - [ ] (setq magit-status-show-untracked-files 'all)
 - [ ] Dired you know what I mean variable `(setq dired-dwim-target t)`

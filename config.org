@@ -1518,6 +1518,16 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+end_src
 
+*** Comment Lines
+
+~comment-line~ doesn't work well with evil, but comment-or-uncomment-region works well when selecting multiple lines
+
+#+begin_src emacs-lisp
+
+(global-set-key (kbd "C-x C-;") #'comment-or-uncomment-region)
+
+#+end_src
+
 ** Language Server Protocol (Eglot)
 
 #+begin_src emacs-lisp
