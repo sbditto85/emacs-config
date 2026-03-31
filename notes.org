@@ -11,6 +11,5 @@
 - [ ] Treemacs and searching the whole projects
 - [ ] consult-find/find-dired/consult-fd
 - [ ] When getting a file path (or other value) echo it out to the bottom of the screen
-- [ ] Dired you know what I mean variable `(setq dired-dwim-target t)`
 - [ ] Casing of a region to title case
 - [ ] For the git review have it highlight which words changed like smerge
