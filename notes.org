@@ -10,3 +10,4 @@
 
 - [ ] Treemacs and searching the whole projects
 - [ ] consult-find/find-dired/consult-fd
+- [ ] Org files do no collapse, or maybe collapse after a ridiculous amount of levels
