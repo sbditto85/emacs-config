@@ -72,6 +72,16 @@
   "Face for the staged/unstaged view indicator."
   :group 'git-review)
 
+(defface git-review-added-word-face
+  '((t :inherit diff-refine-added))
+  "Face for added characters within added lines in git-review."
+  :group 'git-review)
+
+(defface git-review-removed-word-face
+  '((t :inherit diff-refine-removed))
+  "Face for removed characters within removed lines in git-review."
+  :group 'git-review)
+
 ;; ---------------------------------------------------------------------------
 ;; Data structures
 ;; ---------------------------------------------------------------------------
@@ -304,6 +314,99 @@ If CACHED is non-nil, show the staged diff (HEAD vs index)."
                               (min (1+ (line-end-position)) (point-max)))))
         (overlay-put ov 'face face)
         (overlay-put ov 'git-review t)))))
+
+(defun git-review--char-diff-regions (old-str new-str)
+  "Find the changed character region between OLD-STR and NEW-STR.
+Returns (old-start old-end new-start new-end) as 0-based offsets, or nil if identical."
+  (let* ((old-len (length old-str))
+         (new-len (length new-str))
+         (prefix-len (let ((i 0))
+                       (while (and (< i old-len)
+                                   (< i new-len)
+                                   (= (aref old-str i) (aref new-str i)))
+                         (cl-incf i))
+                       i))
+         (max-suffix (min (- old-len prefix-len) (- new-len prefix-len)))
+         (suffix-len (let ((i 0))
+                       (while (and (< i max-suffix)
+                                   (= (aref old-str (- old-len 1 i))
+                                      (aref new-str (- new-len 1 i))))
+                         (cl-incf i))
+                       i))
+         (old-start prefix-len)
+         (old-end   (- old-len suffix-len))
+         (new-start prefix-len)
+         (new-end   (- new-len suffix-len)))
+    (when (or (< old-start old-end) (< new-start new-end))
+      (list old-start old-end new-start new-end))))
+
+(defun git-review--add-word-overlay (buf line-num char-start char-end face)
+  "In BUF, overlay characters CHAR-START..CHAR-END on LINE-NUM with FACE."
+  (with-current-buffer buf
+    (save-excursion
+      (goto-char (point-min))
+      (when (= (forward-line (1- line-num)) 0)
+        (let* ((line-beg (line-beginning-position))
+               (ov (make-overlay (+ line-beg char-start)
+                                 (+ line-beg char-end))))
+          (overlay-put ov 'face face)
+          (overlay-put ov 'git-review t))))))
+
+(defun git-review--apply-paired-word-diffs (left-buf right-buf removed-lines added-lines)
+  "Apply word-level overlays for paired REMOVED-LINES and ADDED-LINES.
+Each element is (line-number . text)."
+  (let ((rems removed-lines)
+        (adds added-lines))
+    (while (and rems adds)
+      (let* ((rem (car rems))
+             (add (car adds))
+             (old-linenum (car rem))
+             (new-linenum (car add))
+             (regions (git-review--char-diff-regions (cdr rem) (cdr add))))
+        (when regions
+          (let ((old-start (nth 0 regions))
+                (old-end   (nth 1 regions))
+                (new-start (nth 2 regions))
+                (new-end   (nth 3 regions)))
+            (when (< old-start old-end)
+              (git-review--add-word-overlay
+               left-buf old-linenum old-start old-end
+               'git-review-removed-word-face))
+            (when (< new-start new-end)
+              (git-review--add-word-overlay
+               right-buf new-linenum new-start new-end
+               'git-review-added-word-face)))))
+      (setq rems (cdr rems)
+            adds (cdr adds)))))
+
+(defun git-review--apply-word-diffs (left-buf right-buf hunks header-lines)
+  "Apply word-level diff overlays within changed lines of HUNKS.
+HEADER-LINES is the number of header lines to offset line numbers by."
+  (dolist (hunk hunks)
+    (let ((old-line (+ header-lines (git-review-hunk-old-start hunk)))
+          (new-line (+ header-lines (git-review-hunk-new-start hunk)))
+          removed-acc added-acc)
+      (dolist (entry (git-review-hunk-lines hunk))
+        (let ((type (car entry))
+              (text (cdr entry)))
+          (cond
+           ((eq type 'removed)
+            (push (cons old-line text) removed-acc)
+            (cl-incf old-line))
+           ((eq type 'added)
+            (push (cons new-line text) added-acc)
+            (cl-incf new-line))
+           ((eq type 'context)
+            (git-review--apply-paired-word-diffs
+             left-buf right-buf
+             (nreverse removed-acc) (nreverse added-acc))
+            (setq removed-acc nil added-acc nil)
+            (cl-incf old-line)
+            (cl-incf new-line)))))
+      ;; Flush any trailing removed/added at end of hunk
+      (git-review--apply-paired-word-diffs
+       left-buf right-buf
+       (nreverse removed-acc) (nreverse added-acc)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Hunk tracking
@@ -587,7 +690,8 @@ HEADER-LINES is the number of header lines to offset by."
             (cl-incf new-line))
            ((eq type 'context)
             (cl-incf old-line)
-            (cl-incf new-line))))))))
+            (cl-incf new-line)))))))
+  (git-review--apply-word-diffs left-buf right-buf hunks header-lines))
 
 (defun git-review--goto-first-change (state)
   "Scroll to the first changed line in the current file."
