@@ -13,3 +13,4 @@
 - [ ] Org files do no collapse, or maybe collapse after a ridiculous amount of levels
 - [ ] When I `C-o` after searching and hit enter on the file name it opens it in a new window instead of just using the current open buffer
 - [ ] Potentially have whitespace on the left side when something is inserted for git review
+- [ ] Git review when renamed it shows the whole file as green rather than just the delta
