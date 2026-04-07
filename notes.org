@@ -16,3 +16,9 @@
 - [ ] Git review when renamed it shows the whole file as green rather than just the delta
 - [ ] How do you "connect" Claude to Emacs (lines highlighted etc)
 - [ ] Git review allows you to comment on things and then generate a output of the comments with file names and locations to pass to Claude to fix things
+- [ ] Fix magit blame not going to the commit on enter
+  ```
+  (with-eval-after-load 'magit-blame
+    (evil-define-key 'normal magit-blame-mode-map
+      (kbd "RET") #'magit-show-commit))
+  ```
