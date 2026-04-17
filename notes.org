@@ -24,3 +24,4 @@
   ```
 - [ ] Update packages
 - [ ] https://github.com/mwac-dev/grease.el
+- [ ] Add `BUNDLE_PATH` ENV var
