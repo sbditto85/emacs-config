@@ -36,7 +36,7 @@ need to be installed.
   (use-package exec-path-from-shell
     :ensure t
     :config
-    (dolist (var '("PROJECTS_PATH" "AUTHOR" "ORG_DIRECTORY" "TIME_DAY_LEADING_ZERO"))
+    (dolist (var '("PROJECTS_PATH" "AUTHOR" "ORG_DIRECTORY" "TIME_DAY_LEADING_ZERO" "BUNDLE_PATH"))
       (add-to-list 'exec-path-from-shell-variables var))
     (exec-path-from-shell-initialize))
 
