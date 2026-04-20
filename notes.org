@@ -24,3 +24,14 @@
   ```
 - [ ] Update packages
 - [ ] https://github.com/mwac-dev/grease.el
+
+
+* Update process
+
+- Rename `elpaca-lock.el` to `elpaca-lock.el.old`
+- Go to `elpaca/repos` and run `for d in */; do (cd "$d" && git checkout $(git remote show origin 2>/dev/null | grep 'HEAD branch' | awk '{print $NF}') && git fetch); done`
+- M-x `elpaca-fetch-all`
+- Review as much as desired
+- M-x `elpaca-pull-all`
+- M-x `elpaca-write-lock-file`
+- Restart and confirm
