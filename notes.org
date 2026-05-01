@@ -25,7 +25,7 @@
 - [ ] Update packages
 - [ ] https://github.com/mwac-dev/grease.el
 - [ ] Refreshing a magit diff doesn't resize the file section
-
+- [ ] Why is JS doing 4 spaces?
 
 * Update process
 
