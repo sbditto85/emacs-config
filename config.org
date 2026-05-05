@@ -1406,7 +1406,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
     (let* ((file (or buffer-file-name (error "Buffer has no file")))
            (mod  (custom/ruby-path-to-module file))
            (expr (concat mod ".example" (when arg ".to_h")))
-           (cmd  (format "irb -r ./test/test_init.rb <<< '%s.example'" expr)))
+           (cmd  (format "irb -r ./test/test_init.rb <<< '%s'" expr)))
       (let ((compilation-read-command nil)
             (default-directory (project-root (project-current))))
         (compile cmd))))
