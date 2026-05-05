@@ -1700,7 +1700,7 @@ Template format explained:
     (setq org-src-preserve-indentation t)
     (setq org-return-follows-link t)
     (setq org-startup-indented t)        ;; visual indentation
-    (setq org-startup-folded 'content)   ;; show headings but fold bodies
+    (setq org-startup-folded 'showall)
     (setq org-hide-emphasis-markers t)   ;; hide *bold* markers, show bold
     (setq org-log-done 'time)           ;; timestamp when marking DONE
     (setq org-log-into-drawer t)        ;; put log notes into :LOGBOOK: drawer
