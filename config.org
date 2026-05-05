@@ -724,6 +724,7 @@ When sharing with others the font size should be larger so its easier for them t
       "p f" '(:ignore f :which-key "File")
       "p f f" '(project-find-file :which-key "Find File")
       "p f p" '(custom/yank-project-file-path :which-key "File Path")
+      "p f n" '(consult-fd :which-key "Find file names")
 
       "p c" '(tabspaces-close-workspace :which-key "Close Project")
       "p k" '(tabspaces-kill-buffers-close-workspace :which-key "Close Project & Kill Buffers")
