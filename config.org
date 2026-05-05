@@ -740,6 +740,7 @@ When sharing with others the font size should be larger so its easier for them t
       "t h s" '(custom/run-haskell-test-suite :which-key "Suite")
       "t r" '(:ignore r :which-key "Ruby")
       "t r a" '(custom/run-ruby-test-automated :which-key "Automated tests")
+      "t r c" '(custom/ruby-run-control :which-key "Control")
       "t r d" '(custom/run-ruby-test-directory :which-key "Directory")
       "t r f" '(custom/run-ruby-test-file :which-key "File")
       "t r s" '(custom/run-ruby-test-suite :which-key "Suite")
@@ -1376,6 +1377,29 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
     (interactive)
     (let ((default-directory (project-root (project-current))))
       (compile "./test.sh")))
+
+  (defun custom/ruby-path-to-module (path)
+    "Convert a Ruby file PATH to a module constant string. e.g. lib/foo/bar_baz.rb -> Foo::BarBaz"
+    (let* ((rel (file-relative-name path (project-root (project-current t))))
+           (no-ext (file-name-sans-extension rel))
+           ;; strip common load-path prefixes
+           (stripped (replace-regexp-in-string
+                      "\\`\\(lib/\\|app/[^/]+/\\|test/\\|spec/\\)" "" no-ext))
+           (segments (split-string stripped "/")))
+      (mapconcat
+       (lambda (seg)
+         (mapconcat #'capitalize (split-string seg "_") ""))
+       segments "::")))
+
+  (defun custom/ruby-run-control ()
+    "Run `<Module>.example' in irb for the current Ruby buffer."
+    (interactive)
+    (let* ((file (or buffer-file-name (error "Buffer has no file")))
+           (mod  (custom/ruby-path-to-module file))
+           (cmd  (format "irb -r ./test/test_init.rb <<< '%s.example'" mod)))
+      (let ((compilation-read-command nil)
+            (default-directory (project-root (project-current))))
+        (compile cmd))))
 
 #+end_src
 

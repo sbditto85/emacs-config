@@ -26,7 +26,6 @@
 - [ ] Refreshing a magit diff doesn't resize the file section
 - [ ] Why is JS doing 4 spaces?
 - [ ] Not loading PNG on WSGR OSX
-- [ ] Compile command to run a control's example
 
 * Update process
 
