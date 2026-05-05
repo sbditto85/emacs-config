@@ -26,6 +26,8 @@
 - [ ] Refreshing a magit diff doesn't resize the file section
 - [ ] Why is JS doing 4 spaces?
 - [ ] Not loading PNG on WSGR OSX
+- [ ] Run control mode no longer truncates
+  - [ ] Also make it so that it is modal and will add `.to_h` if passed the universal argument
 
 * Update process
 
