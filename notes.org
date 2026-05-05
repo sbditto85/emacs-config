@@ -8,7 +8,6 @@
 
 * TO DO
 
-- [ ] Treemacs and searching the whole projects
 - [ ] consult-find/find-dired/consult-fd
 - [ ] When I `C-o` after searching and hit enter on the file name it opens it in a new window instead of just using the current open buffer
 - [ ] Potentially have whitespace on the left side when something is inserted for git review
@@ -21,7 +20,6 @@
     (evil-define-key 'normal magit-blame-mode-map
       (kbd "RET") #'magit-show-commit))
   ```
-- [ ] Update packages
 - [ ] https://github.com/mwac-dev/grease.el
 - [ ] Refreshing a magit diff doesn't resize the file section
 - [ ] Not loading PNG on WSGR OSX
