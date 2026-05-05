@@ -194,6 +194,14 @@ By default ANSI colors are not processed in compilation output, this enables pro
 
 #+end_src
 
+*** Line Length
+
+#+begin_src emacs-lisp
+
+(setq compilation-max-output-line-length 1500)
+
+#+end_src
+
 ** Ring Bell
 
 #+begin_src emacs-lisp
