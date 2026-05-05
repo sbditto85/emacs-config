@@ -1403,6 +1403,16 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+end_src
 
+** JavsScript
+
+#+begin_src emacs-lisp
+
+  (setq-default js-indent-level 2
+                js-switch-indent-offset 2
+                js-jsx-indent-level 2)
+
+#+end_src
+
 ** Haskell
 
 #+begin_src emacs-lisp
