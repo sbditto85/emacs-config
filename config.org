@@ -762,6 +762,8 @@ When sharing with others the font size should be larger so its easier for them t
       "w s" '(evil-window-split :which-key "Split")
       "w v" '(evil-window-vsplit :which-key "Vertical Split")
 
+      "u" '(universal-argument :which-key "Universal Argument")
+
       "z" '(jinx-correct :which-key "Correct spelling")
       )
     )
