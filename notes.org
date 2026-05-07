@@ -19,7 +19,6 @@
       (kbd "RET") #'magit-show-commit))
   ```
 - [ ] https://github.com/mwac-dev/grease.el
-- [ ] Refreshing a magit diff doesn't resize the file section
 - [ ] Not loading PNG on WSGR OSX
 
 * Update process
