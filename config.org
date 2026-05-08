@@ -1363,11 +1363,11 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
       (compile "REMOVE_GEMS=off POSTURE=development ./install-gems.sh"))
     )
 
-  (defun custom/run-ruby-test-file ()
-    (interactive)
-    (let ((default-directory (project-root (project-current))))
-      (compile (format "bundle exec bench %s" (file-relative-name buffer-file-name default-directory))))
-    )
+  (defun custom/run-ruby-test-file (&optional arg)
+    (interactive "P")
+    (let* ((default-directory (project-root (project-current)))
+          (cmd (concat (when arg "D=on ") (format "ruby %s" (file-relative-name buffer-file-name default-directory)))))
+      (compile cmd)))
 
   (defun custom/run-ruby-test-directory ()
     "Run all Ruby tests in a directory. Prompts for directory, defaulting to the directory of the current buffer file."
