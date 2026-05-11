@@ -82,6 +82,13 @@
   "Face for removed characters within removed lines in git-review."
   :group 'git-review)
 
+(defface git-review-padding-face
+  '((((background dark)) :background "#1e1e1e" :extend t)
+    (((background light)) :background "#e8e8e8" :extend t)
+    (t :extend t))
+  "Face for blank padding lines inserted to align side-by-side diffs."
+  :group 'git-review)
+
 ;; ---------------------------------------------------------------------------
 ;; Data structures
 ;; ---------------------------------------------------------------------------
@@ -422,6 +429,86 @@ HEADER-LINES is the number of header lines to offset line numbers by."
     (nreverse ranges)))
 
 ;; ---------------------------------------------------------------------------
+;; Alignment (whitespace padding for side-by-side view)
+;; ---------------------------------------------------------------------------
+
+(defun git-review--insert-padding-lines (buf line-num count)
+  "Insert COUNT blank padding lines before LINE-NUM in BUF."
+  (with-current-buffer buf
+    (let ((inhibit-read-only t))
+      (save-excursion
+        (goto-char (point-min))
+        (when (= (forward-line (1- line-num)) 0)
+          (dotimes (_ count)
+            (insert (propertize "\n" 'face 'git-review-padding-face
+                                'git-review-padding t))))))))
+
+(defun git-review--align-buffers (left-buf right-buf hunks header-lines)
+  "Insert blank padding lines to align HUNKS in LEFT-BUF and RIGHT-BUF.
+Overlays must be applied before calling this, as inserts shift buffer positions.
+Returns list of (old-line . new-line) adjusted hunk start positions."
+  (let ((left-extra 0)
+        (right-extra 0)
+        adjusted)
+    (dolist (hunk hunks)
+      (let* ((old-base (+ header-lines (max 1 (git-review-hunk-old-start hunk)) left-extra))
+             (new-base (+ header-lines (max 1 (git-review-hunk-new-start hunk)) right-extra))
+             (old-cur old-base)
+             (new-cur new-base)
+             (removed-acc 0)
+             (added-acc 0)
+             (run-start-old nil)
+             (run-start-new nil)
+             (in-run nil))
+        (push (cons old-base new-base) adjusted)
+        (dolist (entry (git-review-hunk-lines hunk))
+          (let ((type (car entry)))
+            (cond
+             ((eq type 'context)
+              (when in-run
+                (cond
+                 ((> removed-acc added-acc)
+                  (let ((pad (- removed-acc added-acc))
+                        (at (+ run-start-new added-acc)))
+                    (git-review--insert-padding-lines right-buf at pad)
+                    (cl-incf right-extra pad)
+                    (cl-incf new-cur pad)))
+                 ((> added-acc removed-acc)
+                  (let ((pad (- added-acc removed-acc))
+                        (at (+ run-start-old removed-acc)))
+                    (git-review--insert-padding-lines left-buf at pad)
+                    (cl-incf left-extra pad)
+                    (cl-incf old-cur pad))))
+                (setq removed-acc 0 added-acc 0
+                      run-start-old nil run-start-new nil
+                      in-run nil))
+              (cl-incf old-cur)
+              (cl-incf new-cur))
+             ((eq type 'removed)
+              (unless in-run
+                (setq in-run t run-start-old old-cur run-start-new new-cur))
+              (cl-incf removed-acc)
+              (cl-incf old-cur))
+             ((eq type 'added)
+              (unless in-run
+                (setq in-run t run-start-old old-cur run-start-new new-cur))
+              (cl-incf added-acc)
+              (cl-incf new-cur)))))
+        (when in-run
+          (cond
+           ((> removed-acc added-acc)
+            (let ((pad (- removed-acc added-acc))
+                  (at (+ run-start-new added-acc)))
+              (git-review--insert-padding-lines right-buf at pad)
+              (cl-incf right-extra pad)))
+           ((> added-acc removed-acc)
+            (let ((pad (- added-acc removed-acc))
+                  (at (+ run-start-old removed-acc)))
+              (git-review--insert-padding-lines left-buf at pad)
+              (cl-incf left-extra pad)))))))
+    (nreverse adjusted)))
+
+;; ---------------------------------------------------------------------------
 ;; Window layout
 ;; ---------------------------------------------------------------------------
 
@@ -658,6 +745,10 @@ HEADER-LINES is the number of header lines to offset line numbers by."
           (evil-normal-state)))
       ;; Apply diff overlays — offset by 2 for the header lines
       (git-review--apply-overlays-with-offset left-buf right-buf hunks 2)
+      ;; Insert padding lines to align the two sides (overlays must be applied first)
+      (plist-put state :adjusted-hunk-positions
+                 (when (and left-content right-content)
+                   (git-review--align-buffers left-buf right-buf hunks 2)))
       ;; Update state
       (plist-put state :current-hunks hunks)
       ;; Render file list
@@ -780,14 +871,15 @@ If REVERSE-P, reverse the patch (unstage)."
   "Scroll both panels to the hunk at HUNK-INDEX."
   (let* ((hunks (plist-get state :current-hunks))
          (hunk (nth hunk-index hunks))
+         (adjusted (plist-get state :adjusted-hunk-positions))
          (right-win (plist-get state :right-window))
          (left-win (plist-get state :left-window))
-         ;; Account for 2 header lines in the buffers
          (offset 2))
     (when hunk
       (plist-put state :current-hunk-index hunk-index)
-      (let ((new-line (+ offset (git-review-hunk-new-start hunk)))
-            (old-line (+ offset (git-review-hunk-old-start hunk))))
+      (let* ((adj (and adjusted (nth hunk-index adjusted)))
+             (new-line (if adj (cdr adj) (+ offset (git-review-hunk-new-start hunk))))
+             (old-line (if adj (car adj) (+ offset (git-review-hunk-old-start hunk)))))
         (when (and right-win (window-live-p right-win))
           (with-selected-window right-win
             (goto-char (point-min))
@@ -1115,6 +1207,7 @@ Use TAB to toggle between staged and unstaged views per file."
                                 :saved-window-config saved-config
                                 :current-hunks nil
                                 :current-hunk-index nil
+                                :adjusted-hunk-positions nil
                                 :view-mode nil))))
       (with-current-buffer (plist-get layout :list-buffer)
         (git-review-mode)
