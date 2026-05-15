@@ -20,6 +20,7 @@
 - [ ] https://github.com/mwac-dev/grease.el
 - [ ] Not loading PNG on WSGR OSX
 - [ ] Git diff file section doesn't go the full width
+- [ ] `project-forget-project` create an alias for remove or delete project
 
 * Update process
 
