@@ -1268,7 +1268,18 @@ Use consult to search in a buffer
     :config
     (setq persistent-scratch-scratch-buffer-p-function
       (lambda () (string= (buffer-name) "*persistent-scratch*")))
-    (persistent-scratch-setup-default))
+    (persistent-scratch-setup-default)
+    (add-hook 'kill-buffer-hook
+      (lambda ()
+        (when (string= (buffer-name) "*persistent-scratch*")
+          (persistent-scratch-save))))
+    (advice-add 'persistent-scratch-save :around
+      (lambda (orig &optional file)
+        (when (cl-some (lambda (buf)
+                         (with-current-buffer buf
+                           (funcall persistent-scratch-scratch-buffer-p-function)))
+                       (buffer-list))
+          (funcall orig file)))))
 
   (add-to-list 'display-buffer-alist
                '("\\*persistent-scratch\\*"
@@ -1285,7 +1296,8 @@ Use consult to search in a buffer
         (let ((buf (get-buffer-create "*persistent-scratch*")))
           (with-current-buffer buf
             (when (zerop (buffer-size))
-              (funcall initial-major-mode)))
+              (funcall initial-major-mode)
+              (persistent-scratch-restore)))
           (display-buffer buf)))))
 
 #+end_src
