@@ -22,6 +22,7 @@
 - [ ] Git diff file section doesn't go the full width
 - [ ] `project-forget-project` create an alias for remove or delete project
 - [ ] In the file path if it sees "controls" or "export" do not shorten it
+- [ ] Close all other project buffers doesn't seem to work correctly
 
 * Update process
 
