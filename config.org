@@ -1653,6 +1653,66 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
 
 #+end_src
 
+*** DISABLED Commenting from the status page (Aaron)
+
+#+begin_src emacs-lisp :tangle no
+
+  (defun c/magit-insert-review-comment (comment)
+    "Insert COMMENT above the worktree line corresponding to point."
+    (interactive (list (read-string "Comment: ")))
+    (let* ((window (selected-window))
+           (screen-line (count-screen-lines
+                         (window-start window) (line-beginning-position)
+                         nil window))
+           (column (current-column))
+           (file-ident (magit-section-ident (magit-diff--file-section)))
+           worktree-line)
+      (pcase-let ((`(,buffer ,position)
+                   (magit-diff-visit-file--noselect t)))
+        (with-current-buffer buffer
+          (goto-char position)
+          (beginning-of-line)
+          (insert "### " comment "\n")
+          (setq worktree-line (line-number-at-pos))
+          (let ((magit-inhibit-refresh t))
+            (save-buffer))))
+      (magit-refresh)
+      (when (c/magit-goto-worktree-line file-ident worktree-line)
+        (move-to-column column)
+        (set-window-point window (point))
+        (set-window-start
+         window
+         (save-excursion
+           (vertical-motion (- screen-line) window)
+           (point))
+         t))))
+
+  (evil-define-key 'normal magit-status-mode-map (kbd "#") #'c/magit-insert-review-comment)
+
+  (defun c/magit-goto-worktree-line (file-ident line)
+    "Go to worktree LINE in the diff file identified by FILE-IDENT."
+    (when-let* ((file-section (magit-get-section file-ident))
+                (hunk (cl-find-if
+                       (lambda (section)
+                         (when-let* ((range (and (magit-hunk-section-p section)
+                                                (oref section to-range))))
+                           (and (<= (car range) line)
+                                (< line (+ (car range) (cadr range))))))
+                       (oref file-section children))))
+      (goto-char (oref hunk content))
+      (let ((current-line (car (oref hunk to-range))))
+        (catch 'found
+          (while (< (point) (oref hunk end))
+            (when (and (= current-line line)
+                       (memq (char-after) '(?+ ?\s)))
+              (throw 'found t))
+            (when (memq (char-after) '(?+ ?\s))
+              (setq current-line (1+ current-line)))
+            (forward-line))
+          nil))))
+
+#+end_src
+
 ** Browse At Remove
 
 #+begin_src emacs-lisp
