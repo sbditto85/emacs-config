@@ -1613,6 +1613,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   :ensure t
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+  (magit-diff-extra-stat-arguments #'magit-diff-use-window-width-as-stat-width)
 
   :config
   (with-eval-after-load 'magit
