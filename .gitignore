@@ -6,3 +6,10 @@ experimental.el
 var
 etc
 .emacs-config-tabspaces-session.el
+
+# Global ~/.gitignore excludes /.claude/ from every repo; this project
+# tracks its Claude Code skills (but not personal settings), so opt
+# back in only for skills/.
+!/.claude/
+/.claude/*
+!/.claude/skills/
