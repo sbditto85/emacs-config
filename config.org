@@ -1394,7 +1394,7 @@ NOTE: Change the ==use-package== below to ==use-feature== if package management 
   (defun custom/run-ruby-test-automated ()
     (interactive)
     (let ((default-directory (project-root (project-current))))
-      (compile "bundle exec bench test/automated")))
+      (compile "TEST_BENCH_OUTPUT_LEVEL='failure' bundle exec bench test/automated")))
 
   (defun custom/run-ruby-test-suite ()
     (interactive)
