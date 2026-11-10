@@ -1,58 +1,32 @@
 ;;; elpaca-apply-update.el -*- lexical-binding: t; -*-
 
-;; Run with:
-;;   emacs -Q --batch --init-directory=. -l init.el -l scripts/elpaca-apply-update.el -- \
-;;     DIR1=REF1 DIR2=REF2 ...
-;;
-;; Each trailing argument is a source-dir=target-ref pair, exactly as found
-;; in var/elpaca-outdated.tsv (the "source-dir" and "new-ref" columns) for
-;; every repo whose update was approved. For a mono-repo (treemacs, magit,
-;; embark, dired-hacks, etc.) this only needs to be listed once even though
-;; it provides several package ids.
-;;
-;; For each pair: checks out REF in DIR with plain git (exact, no re-fetch,
-;; no risk of picking up commits that landed after review), then asks
-;; Elpaca to rebuild every queued package id backed by that dir. Once every
-;; rebuild has finished, regenerates elpaca-lock.el via Elpaca's own
-;; elpaca-write-lock-file so the lock file reflects reality rather than
-;; being hand-edited.
+;; Checking out the exact reviewed ref, rather than pulling, keeps commits
+;; that landed upstream after the review from being picked up.
+;; - Casey, Tue Nov 10 2026
+(defun cea/elpaca-apply--checkout (spec)
+  "Check out the REPO=REF SPEC and return the package ids it provides."
+  (unless (string-match "\\`\\([^=]+\\)=\\([0-9a-f]\\{7,40\\}\\)\\'" spec)
+    (error "Malformed argument %S, expected REPO=REF" spec))
+  (let* ((name (match-string 1 spec))
+         (ref (match-string 2 spec))
+         (repo (cea/elpaca-upgrade-find-repo name))
+         (dir (car repo)))
+    (unless (cea/elpaca-upgrade-git dir "cat-file" "-e" (concat ref "^{commit}"))
+      (error "%s has no commit %s; run the scan again" name ref))
+    (message "Checking out %s at %s (%s)" name ref
+             (mapconcat #'symbol-name (cdr repo) ", "))
+    (cea/elpaca-upgrade-git! dir "checkout" "--quiet" "--detach" ref)
+    (cdr repo)))
 
-(defun cea/elpaca-apply--git (dir &rest args)
-  (with-temp-buffer
-    (let ((default-directory (file-name-as-directory dir)))
-      (unless (zerop (apply #'call-process "git" nil t nil args))
-        (error "git %s failed in %s: %s" args dir (buffer-string))))
-    (string-trim (buffer-string))))
-
-(defun cea/elpaca-apply--ids-for-dir (dir)
-  (let (ids)
-    (dolist (pair (elpaca--queued))
-      (when (equal (ignore-errors (elpaca<-source-dir (cdr pair))) dir)
-        (push (car pair) ids)))
-    (nreverse ids)))
-
-(defun cea/elpaca-apply--run (pairs)
-  (unless pairs
-    (error "Usage: -- DIR1=REF1 DIR2=REF2 ..."))
-  (let (all-ids)
-    (dolist (pair pairs)
-      (unless (string-match "\\`\\(.+\\)=\\([0-9a-f]+\\)\\'" pair)
-        (error "Malformed argument %S, expected DIR=REF" pair))
-      (let* ((dir (expand-file-name (match-string 1 pair)))
-             (ref (match-string 2 pair))
-             (ids (cea/elpaca-apply--ids-for-dir dir)))
-        (unless ids (error "No queued packages found for source-dir %s" dir))
-        (message "Checking out %s in %s (packages: %s)" ref dir
-                 (mapconcat #'symbol-name ids ", "))
-        (cea/elpaca-apply--git dir "checkout" "--detach" ref)
-        (dolist (id ids)
-          (push id all-ids)
-          (message "Queuing rebuild for %s" id)
-          (elpaca-rebuild id))))
-    (message "Waiting for rebuilds to finish...")
+(defun cea/elpaca-apply--run ()
+  (let* ((ids (mapcan #'cea/elpaca-apply--checkout (cea/elpaca-upgrade-positional-args)))
+         (ids (cl-union ids (cea/elpaca-upgrade-stale-ids))))
+    (unless ids
+      (error "Nothing to apply. Usage: -- REPO=REF ..."))
     (elpaca-wait)
-    (message "Writing lock file to %s" elpaca-lock-file)
-    (elpaca-write-lock-file elpaca-lock-file)
-    (message "Done. Updated: %s" (mapconcat #'symbol-name (nreverse all-ids) ", "))))
+    (cea/elpaca-upgrade-rebuild (sort ids #'string<))
+    (when-let* ((failed (cea/elpaca-upgrade-failed-ids)))
+      (error "Packages did not finish building: %S" failed))
+    (message "Rebuilt: %s" (mapconcat #'symbol-name ids ", "))))
 
-(cea/elpaca-apply--run (cdr (member "--" command-line-args)))
+(cea/elpaca-upgrade-main #'cea/elpaca-apply--run)

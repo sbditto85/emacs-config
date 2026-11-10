@@ -75,10 +75,9 @@ To evaluate a code block in `config.org`: Place point in the block and use `C-c 
 
 ### Package Management with Elpaca
 
-```emacs-lisp
-;; Install/update all packages
-M-x elpaca-update-all
+Upgrade packages, including Elpaca itself, with the `upgrade-dependencies` skill ([`.claude/skills/upgrade-dependencies/SKILL.md`](.claude/skills/upgrade-dependencies/SKILL.md)). `M-x elpaca-update-all` does nothing here: every lock file recipe has a `:ref`, which Elpaca treats as a pin.
 
+```emacs-lisp
 ;; Rebuild a specific package (e.g., vterm)
 M-x elpaca-rebuild
 ;; Then select the package

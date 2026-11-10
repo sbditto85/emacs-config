@@ -1,110 +1,179 @@
 ---
 name: upgrade-dependencies
-description: Check for Elpaca package updates in this Emacs config, review each package's upstream commits for security/behavior concerns, get approval, then apply approved updates and regenerate elpaca-lock.el. Use when asked to upgrade/update Emacs packages, check for outdated dependencies, or review elpaca-lock.el changes.
+description: Upgrade this Emacs config's Elpaca packages (Elpaca included) in an isolated candidate copy, review every upstream change against how the config uses the package, auto-apply needed config fixes, smoke test, and land only after the user reviews. Use when asked to upgrade/update Emacs packages or Elpaca, check for outdated dependencies, or review elpaca-lock.el changes.
 ---
 
-# Upgrading Elpaca dependencies
+# Upgrade Dependencies
 
-This repo pins every package to an exact commit in `elpaca-lock.el`. This skill
-finds packages with newer upstream commits, has you (Claude) read the actual
-diffs and summarize/flag them, gets the user's explicit approval, then applies
-only the approved updates and regenerates the lock file — all through Elpaca's
-own build machinery, never by hand-editing the lock file.
+Every package is pinned to an exact commit in `elpaca-lock.el`. Because each lock file recipe carries a `:ref`, Elpaca treats every package as pinned, so `elpaca-update-all` does nothing; never use it, and never hand-edit `elpaca-lock.el`.
 
-Run everything from the repo root. **Do not run this while the user's Emacs is
-open** — both scripts boot a second, separate Emacs process against the same
-`elpaca/` directory the user's live Emacs uses; confirm with the user if
-unsure.
+The upgrade is built in a candidate: a detached git worktree at `var/upgrade-candidate/` with a copy of `elpaca/` (copy-on-write on APFS, btrfs, and XFS; a full copy on other filesystems). The scripts run on macOS and Linux. Everything up to landing happens there, so the user's running Emacs is never touched and they can keep working. Landing stages the changes in the repository and moves the live packages to the reviewed commits; the user reviews and commits.
 
-## Step 1 — Scan for outdated packages
+Run every command from the repository root. Never commit; the user commits after reviewing, and if they ask you to commit, use the git-commit skill.
+
+## Scripts
+
+| Script | Purpose |
+| --- | --- |
+| `scripts/upgrade-prepare.sh` | Create the candidate |
+| `scripts/upgrade-run.sh DIR SCRIPT.el [ARGS]` | Boot the config in `DIR` headlessly and run an Elisp script |
+| `elpaca-outdated.el` | Fetch every repo and write `var/upgrade/outdated.tsv` |
+| `elpaca-apply-update.el REPO=REF ...` | Check out reviewed commits and rebuild |
+| `elpaca-check.el --label NAME [--write-lock]` | Smoke test and write `var/upgrade/check-NAME.md` |
+| `elpaca-sync-to-lock.el [--dry-run]` | Move checkouts to the refs in the lock file and rebuild |
+| `scripts/upgrade-try.sh` | Open a GUI Emacs on the candidate, alongside the live one |
+| `scripts/upgrade-land.sh` | Stage the candidate's changes and sync the live packages |
+| `scripts/upgrade-rollback.sh` | Restore the live packages from before landing |
+| `scripts/upgrade-cleanup.sh` | Remove the candidate |
+
+Report paths below are relative to the candidate (`var/upgrade-candidate/var/upgrade/`). Batch output always contains a few known messages (`Source file ... newer than byte-compiled file`, `Failed to restore scratch buffers`, startup warnings); the check reports are the place to look, not the raw output.
+
+## 1. Prepare
 
 ```sh
-emacs -Q --batch --init-directory=. -l init.el -l scripts/elpaca-outdated.el
+scripts/upgrade-prepare.sh
+scripts/upgrade-run.sh var/upgrade-candidate elpaca-outdated.el
+scripts/upgrade-run.sh var/upgrade-candidate elpaca-check.el --label baseline
 ```
 
-This boots the real config headlessly (so every package declared via
-`use-package`/`elpaca` gets queued exactly as it would in normal Emacs),
-fetches `origin` for every package's git checkout, and compares the currently
-pinned commit against `origin`'s default branch tip. It writes
-`var/elpaca-outdated.tsv` (gitignored) with one line per **repo** (not per
-package — mono-repos like `magit`/`magit-section` or `treemacs` and its
-sub-packages share one checkout and one line):
+If a candidate already exists, ask the user whether to continue it or remove it with `scripts/upgrade-cleanup.sh`.
 
-```
-package-ids(comma separated)<TAB>source-dir<TAB>remote-url<TAB>old-ref<TAB>new-ref
-```
+`outdated.tsv` has one row per repo, not per package: mono-repos such as `magit` (`magit`, `magit-section`), `embark`, `treemacs`, and `elpaca` (`elpaca`, `elpaca-use-package`) provide several package ids and are updated together. Columns: `repo`, `ids`, `source-dir`, `url`, `old-ref`, `new-ref`, `branch`, `commits`, `fast-forward`, `changes`.
 
-If a row lists multiple package ids, approving or rejecting it applies to all
-of them together — they cannot be updated independently.
+`check-baseline.md` records the problems that already exist, so that only new problems are attributed to the upgrade.
 
-## Step 2 — Review each outdated repo
+## 2. Review
 
-For every row in the TSV, inspect the actual changes between `old-ref` and
-`new-ref` in `source-dir`:
+The user does not know what to look for in upstream Elisp changes; this review is the reason the skill exists. The question for each repo is "does this change affect how this config uses the package?", not "what changed?"
+
+For each repo, build a usage profile, then read the changes against it.
+
+### Usage Profile
+
+Search `config.org`, `init.el`, `early-init.el`, and `custom/` for:
+
+- The package's `use-package` block, and everything in it: `:custom`, `:bind`, `:general`, `:hook`, `:init`, `:config`, `:after`, `:ensure` recipe.
+- Every symbol with the package's prefix (`consult-`, `evil-collection-`, ...), anywhere in the config, including keybindings made with `general` and `evil-define-key`.
+- Private symbols (with a double hyphen, such as `consult--source-buffer`). Upstream renames these without notice; any use of one is high risk and must be checked against the new code.
+- Packages the config uses through this one: `embark-consult`, `treemacs-evil`, the `evil-collection` modes the config enables, and so on.
+
+### What To Look For
+
+Read the change history first, then the code:
 
 ```sh
 git -C <source-dir> log --oneline <old-ref>..<new-ref>
-git -C <source-dir> diff --stat <old-ref>..<new-ref>
-git -C <source-dir> log -p <old-ref>..<new-ref>          # full diff — read it
+git -C <source-dir> diff <old-ref> <new-ref> -- 'NEWS*' 'CHANGELOG*' '*.org' '*.md'
+git -C <source-dir> diff <old-ref> <new-ref> -- '*.el'
 ```
 
-Also do a best-effort check for known advisories against the repo itself
-(derive owner/repo from the remote URL column):
+Then check each of these against the usage profile:
+
+- **Removed or renamed definitions.** A `defun`, `defvar`, `defcustom`, `defmacro`, `defalias`, `defface`, keymap, or mode the config uses now only appears on a `-` line.
+- **Obsolete declarations.** New `make-obsolete`, `make-obsolete-variable`, `define-obsolete-function-alias`, or `define-obsolete-variable-alias` forms naming a symbol the config uses. These keep working for now, but the replacement should be adopted.
+- **Changed signatures.** Functions the config calls, or hooks it adds functions to, now take different arguments.
+- **Changed defaults.** A `defcustom` the config relies on without setting has a new default; behavior changes silently.
+- **Changed key bindings.** Upstream maps now bind or unbind keys the config also binds, which matters especially with `evil-collection`.
+- **Package metadata.** `Package-Requires` raises the minimum Emacs version (this config runs Emacs 32), raises a dependency's minimum version, or adds a new dependency. A new dependency is new code to review.
+- **Load-time behavior.** Code that now runs on `require` or on mode activation: new timers, hooks added globally, advice on core functions.
+
+Then a security pass over the whole diff:
+
+- New network access (`url-retrieve`, `make-network-process`, curl or wget), new process execution (`call-process`, `start-process`, `shell-command`), or `eval` of data read from files or the network.
+- Obfuscated, minified, encoded, or binary content; new executables or build scripts.
+- Access to credentials, `auth-source`, environment variables, or files outside the package's own concerns.
+- A change of maintainer or repository URL, or `fast-forward` being `NO` (upstream rewrote history). Always flag these.
+- A large or unrelated change in what the commit messages describe as minor.
+
+A clean security pass means nothing suspicious was found in the diff, not that the package is proven safe; say so in those terms.
+
+For `elpaca`, also compare `elpaca-installer-version` in the new `elpaca.el` with the value in `init.el`, and the installer block in the new `README.org` with the bootstrap in `init.el`. If either changed, propose the `init.el` update as a config change.
+
+### Delegating
+
+Review in parallel, with one general-purpose subagent per repo that has a non-trivial diff or appears in the usage profile; batch trivial repos (one or two small commits, no usage beyond loading the package) into a single subagent. Give each subagent the row from `outdated.tsv`, the instructions in this section, and the paths of the config files, and have it return, for each repo: a verdict, the reason for it, any exact config edit, and the security result.
+
+### Verdicts
+
+- **No impact:** nothing in the change touches the usage profile.
+- **Needs config change:** the upgrade is fine with a specific edit to `config.org` (or `init.el` or `custom/`); give the exact edit.
+- **Hold:** do not upgrade now; give the reason (a breaking change without a clear fix, a security concern, a dependency that cannot be upgraded).
+
+Write the review to `review.md` in the reports directory: a summary table (repo, commits, verdict, one-line reason), followed by a section for each repo whose verdict is not "no impact" with a short explanation of why the change matters for this config. Present the table and those sections to the user; one line is enough for "no impact" repos.
+
+## 3. Approve
+
+Ask the user which repos to upgrade, all in one question. The default to offer is every repo except those on hold. Repos that are not approved keep their current commit and lock file entry. If nothing is approved, remove the candidate with `scripts/upgrade-cleanup.sh` and stop.
+
+## 4. Apply
+
+Pass a `repo=new-ref` pair for every approved row (the `repo` and `new-ref` columns):
 
 ```sh
-gh api repos/<owner>/<repo>/security-advisories 2>/dev/null
+scripts/upgrade-run.sh var/upgrade-candidate elpaca-apply-update.el <repo>=<new-ref> ...
 ```
 
-If `gh` isn't authenticated or the call fails, note that the advisory check
-was skipped for that package rather than silently omitting it.
+This checks out exactly the reviewed commit (it never pulls, so nothing that landed upstream after the review is picked up) and rebuilds every package from that repo, plus any package whose build is older than its source.
 
-There is no CVE/vulnerability database for arbitrary GitHub-hosted Elisp
-packages (unlike `npm audit`/`pip-audit`), so the security review here means
-**you actually read the diffs** and flag anything that looks off: new network
-calls, `eval`/`shell-command`/curl-pipe-sh patterns, obfuscated or minified
-code, credential/env access, sudden unexplained maintainer or repo changes,
-or a jump to a suspiciously large/unrelated diff for a "minor" version bump.
-Absence of a flag means "nothing suspicious found in this diff," not "proven
-safe."
+Then make the config edits from the "needs config change" verdicts in the candidate's files (`var/upgrade-candidate/config.org` and so on, never the live ones). Make them without asking; the user reviews them before anything lands.
 
-For each repo, produce a short summary: commit count, one or two sentences on
-what functionally changed, and an explicit security line (either "no
-concerns" or the specific flag).
-
-## Step 3 — Get approval
-
-Present the full set of summaries to the user in one batch (not one at a
-time) and ask which repos to approve for update. Anything not explicitly
-approved is left untouched — its checkout, and its `elpaca-lock.el` entry,
-stay exactly as they are.
-
-## Step 4 — Apply approved updates
-
-Build a `source-dir=new-ref` argument per approved row (from the same TSV
-columns) and run:
+## 5. Check
 
 ```sh
-emacs -Q --batch --init-directory=. -l init.el -l scripts/elpaca-apply-update.el -- \
-  <source-dir-1>=<new-ref-1> <source-dir-2>=<new-ref-2> ...
+scripts/upgrade-run.sh var/upgrade-candidate elpaca-check.el --label after --write-lock
+diff var/upgrade-candidate/var/upgrade/check-baseline.md var/upgrade-candidate/var/upgrade/check-after.md
 ```
 
-For each pair this checks out exactly `new-ref` with plain `git checkout`
-(not a re-fetch/re-merge, so it's immune to any commits that landed upstream
-between review and approval), then calls `elpaca-rebuild` on every package id
-backed by that directory, waits for all rebuilds via `elpaca-wait`, and
-finally calls `elpaca-write-lock-file` to regenerate `elpaca-lock.el` from
-Elpaca's own state. Watch the output for byte-compile/native-comp errors or
-warnings and surface them — don't treat a clean exit code alone as success.
+Booting installs any new dependency, and `--write-lock` then regenerates the candidate's `elpaca-lock.el`. The check also compiles native modules such as vterm's without prompting.
 
-## Step 5 — Hand back for review
+Every new entry in the report is attributable to the upgrade and must be resolved: fix the config and run the check again, or move the repo to hold (check it back out at `old-ref` with `elpaca-apply-update.el` and run the check again). Sections:
 
-Show the user `git diff elpaca-lock.el` so they can see exactly what moved.
-Do not stage or commit it — per standard git-safety practice, only commit
-when the user explicitly asks. Suggest they restart Emacs and exercise the
-updated packages before committing, since the rebuild only recompiles the
-package, it doesn't reload it into any already-running Emacs.
+- **Packages That Did Not Finish:** an Elpaca build or install failed.
+- **Startup Warnings:** warnings raised while booting the config.
+- **Packages That Fail To Load:** `require` of the package signals an error.
+- **Config Compile Warnings:** the config compiled with every package loaded, which shows obsolete, undefined, and wrong-arity calls. Its line numbers refer to the candidate's generated `config.el`; find the matching block in `config.org`. It misses some problems inside `use-package` bodies, so it supplements the review, not replaces it.
+- **Stale Builds:** byte-compiled files older than their source.
+- **Differences From Lock File:** checkouts that disagree with the lock file; always none after `--write-lock`.
+- **Lock File Changes Since HEAD:** the refs that moved, which is the readable version of the lock file diff (Elpaca reformats recipes between versions, so the raw diff can be noisy).
 
-## Rejecting everything
+## 6. User Review
 
-If the user approves nothing, stop after Step 3 — there's nothing to apply,
-and the lock file and checkouts remain untouched.
+Give the user:
+
+- The verdict table, the config edits made, and anything new in the check compared with the baseline.
+- `git -C var/upgrade-candidate diff` for the full change.
+- The offer to try the candidate interactively with `scripts/upgrade-try.sh`, which opens a separate GUI Emacs on the candidate while their live Emacs keeps running.
+
+Wait for the user's go-ahead before landing.
+
+## 7. Land
+
+The user must quit their live Emacs first; the script refuses to run otherwise. Then:
+
+```sh
+scripts/upgrade-land.sh
+```
+
+This stages the candidate's changes in the repository (`git apply --index --3way`, so a conflict stops it before any package is touched), snapshots `elpaca/` to `elpaca.prev/`, moves the live checkouts to the locked refs (fetching them from the candidate, not the network), rebuilds what changed, and runs the check against the live config as `check-landed.md`. It reports whether that check matches the candidate's.
+
+Only changed packages are rebuilt, so Emacs natively recompiles only those packages in the background on the next launch.
+
+Then tell the user the upgrade is staged but not committed, and offer a commit message built from `review.md`: a summary line, the upgraded repos with their verdicts, the config changes made, and the repos held with the reason.
+
+After the user commits, remove the candidate:
+
+```sh
+scripts/upgrade-cleanup.sh
+```
+
+## Rollback
+
+With Emacs closed:
+
+```sh
+scripts/upgrade-rollback.sh
+```
+
+This puts `elpaca.prev/` back as `elpaca/` and keeps the failed install as `elpaca.failed/`. It then prints the git step for undoing the config changes: `git restore --staged --worktree ...` if the upgrade is not committed, or `git revert` if it is.
+
+Once a later upgrade has replaced the snapshot, roll back by reverting the commit and running `scripts/upgrade-run.sh . elpaca-sync-to-lock.el`.

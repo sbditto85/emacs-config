@@ -23,7 +23,12 @@
 - [ ] In the file path if it sees "controls" or "export" do not shorten it
 - [ ] Close all other project buffers doesn't seem to work correctly
 
-* Update process
+* Archived                                                         :ARCHIVE:
+
+Superseded by the `upgrade-dependencies` Claude skill
+(`.claude/skills/upgrade-dependencies/SKILL.md`).
+
+** Update process (notes.org)
 
 - Rename `elpaca-lock.el` to `elpaca-lock.el.old`
 - Go to `elpaca/repos` and run `for d in */; do (cd "$d" && git checkout $(git remote show origin 2>/dev/null | grep 'HEAD branch' | awk '{print $NF}') && git fetch); done`
@@ -32,3 +37,18 @@
 - M-x `elpaca-pull-all`
 - M-x `elpaca-write-lock-file`
 - Restart and confirm
+
+** Update process (init.el comments)
+
+- elpaca-fetch / elpaca-fetch-all — only downloads remote commits, does not merge or rebuild
+- elpaca-merge / elpaca-merge-all — merges changes (optionally fetches first), rebuilds
+- elpaca-pull / elpaca-pull-all — fetch + merge + rebuild (aliased as elpaca-update / elpaca-update-all)
+
+Safer update workflow:
+
+1. M-x elpaca-fetch-all — download all new commits without changing anything
+2. M-x elpaca-log-updates — review what changed (if available), or check elpaca-manager to see which packages have pending updates
+3. M-x elpaca-pull-all — actually merge and rebuild when you're ready
+4. Restart Emacs, verify things work
+5. M-x elpaca-write-lock-file — regenerate the lock file
+6. git diff elpaca-lock.el — review and commit
