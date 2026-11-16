@@ -159,7 +159,7 @@ Custom helper functions:
 ## Important Notes
 
 - **vterm compilation**: First time using vterm may require `M-x elpaca-rebuild` selecting vterm, then restart Emacs.
-- **Font installation**: Run `M-x all-the-icons-install-fonts` on first setup for modeline icons.
+- **Font installation**: Run `M-x nerd-icons-install-fonts` on first setup for modeline icons.
 - **Hardcoded PATH**: The PATH in `init.el` line 7 is hardcoded for macOS. On Linux or other systems, this should be updated or removed to use the system PATH.
 - **Disabled sections**: Some sections in `config.org` are marked `:tangle no` - these are intentionally disabled (e.g., use-feature macro, recursive minibuffers, modern-tab-bar styling).
 - **Backup file naming**: Uses SHA1 hashing for backup and auto-save filenames to avoid path length issues (borrowed from Doom Emacs).

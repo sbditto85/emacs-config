@@ -489,9 +489,7 @@ Add =:capf= and =:compdef= to =use-package=.
 #+begin_src emacs-lisp
 
 (use-package cape
-  :ensure t
-  :config
-  (setq cape-dabbrev-check-other-buffers nil))
+  :ensure t)
 
 #+end_src
 
@@ -550,7 +548,7 @@ Add =:capf= and =:compdef= to =use-package=.
 
 The default configuration is quite good but you can check out the [[https://github.com/seagle0128/doom-modeline#customize][configuration options]] for more things you can enable or disable.
 
-*NOTE:* The first time you load your configuration on a new machine, you'll need to run `M-x all-the-icons-install-fonts` so that mode line icons display correctly.
+*NOTE:* The first time you load your configuration on a new machine, you'll need to run `M-x nerd-icons-install-fonts` so that mode line icons display correctly.
 
 #+begin_src emacs-lisp
 
@@ -811,6 +809,7 @@ When sharing with others the font size should be larger so its easier for them t
     :after evil
     :config
     (setq evil-collection-key-blacklist '("SPC"))
+    (setq evil-collection-magit-visit-worktree-file-on-return nil)
     (evil-collection-init))
 
   (use-package evil-escape
@@ -911,7 +910,7 @@ Jinx is only set to check certain parts based on the font face, but its difficul
 
     ;; Haskell
     (add-to-list 'jinx-camel-modes 'haskell-mode)
-    (setf (alist-get 'ruby-mode jinx-exclude-faces)
+    (setf (alist-get 'haskell-mode jinx-exclude-faces)
           '(font-lock-keyword-face
             font-lock-builtin-face
             font-lock-constant-face
@@ -1113,7 +1112,7 @@ Claude code generated a function to be called when highlighting a region
   (global-tab-line-mode -1)
 
   :config
-  (consult-customize consult--source-buffer :hidden t :default nil)
+  (consult-customize consult-source-buffer :hidden t :default nil)
   ;; set consult-workspace buffer list
   (defvar consult--source-workspace
     (list :name "Workspace Buffers"
