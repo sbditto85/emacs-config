@@ -6,6 +6,30 @@
        :rev :newest))
 #+end_src
 
+* Syncing Another Machine After An Upgrade
+
+Elpaca only reads `elpaca-lock.el` when installing a package, so pulling an upgrade leaves existing checkouts on their old commits until they are synced.
+
+With `elpaca/` already present:
+
+1. Quit Emacs
+2. `git pull`
+3. `scripts/upgrade-run.sh . elpaca-sync-to-lock.el` (add `--dry-run` to preview)
+   - Checks out each package at its locked ref, fetching from origin, and rebuilds only what changed
+   - Installs packages that are new in the lock file
+4. Optional: `scripts/upgrade-run.sh . elpaca-check.el --label synced`, then confirm `var/upgrade/check-synced.md` shows no differences from the lock file
+5. Start Emacs; the first launch is slower while rebuilt packages natively compile, and jinx compiles its module the first time a spell-checked buffer opens
+
+If the sync fails with a `void-function` error inside elpaca, `eln-cache/` holds native-compiled elpaca files from a different elpaca version. Move them aside and sync again:
+
+#+begin_src sh
+mkdir -p ~/stale-eln && mv eln-cache/*/elpaca*.eln ~/stale-eln/
+#+end_src
+
+Without `elpaca/` (new machine): start Emacs; Elpaca installs everything at the locked refs.
+
+Last resort: `./clean.sh`, then restart to rebuild everything from the lock file.
+
 * TO DO
 
 - [ ] When I `C-o` after searching and hit enter on the file name it opens it in a new window instead of just using the current open buffer
