@@ -83,9 +83,9 @@
                    ("https://github.com/emacs-compat/compat"
                     . "compat")
                    :tar "31.0.0.2" :host gnu :files
-                   ("*" (:exclude ".git")) :source "GNU ELPA" :id
-                   compat :type git :protocol https :inherit t :depth
-                   treeless :ref
+                   ("*" (:exclude ".git")) :source
+                   "elpaca-menu-lock-file" :id compat :type git
+                   :protocol https :inherit t :depth treeless :ref
                    "90880f81419577e1d3f68424d2a3adf31e6d663e"))
  (compdef :source "elpaca-menu-lock-file" :recipe
           (:package "compdef" :fetcher github :repo
@@ -189,7 +189,7 @@
                                      "*-pkg.el"))
                           :source "elpaca-menu-lock-file" :protocol
                           https :inherit t :depth treeless :ref
-                          "e37a1cefa4b9b96d3bd099cf88a49d81f3fd883b"
+                          "8ac9f2fc2ce29fc534ba30dcb30bb6a4a5d0f5b5"
                           :id doom-modeline :type git))
  (dumb-jump :source "elpaca-menu-lock-file" :recipe
             (:package "dumb-jump" :repo "jacktasia/dumb-jump" :fetcher
