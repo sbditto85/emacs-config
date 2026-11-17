@@ -8,12 +8,21 @@
 
 (defun cea/elpaca-outdated--row (dir ids)
   "Fetch DIR and return a TSV row if its upstream branch has moved on."
-  (cea/elpaca-upgrade-git! dir "fetch" "--quiet" "origin")
+  ;; `git fetch' never updates `origin/HEAD' and keeps remote-tracking
+  ;; branches that upstream deleted, so after an upstream default branch
+  ;; rename (master to main) the clone still points at the old branch.
+  ;; Pruning drops the deleted branch and `set-head --auto' re-reads the
+  ;; remote's default branch.
+  (cea/elpaca-upgrade-git! dir "fetch" "--quiet" "--prune" "origin")
+  (cea/elpaca-upgrade-git dir "remote" "set-head" "origin" "--auto")
   (let* ((e (elpaca-get (car ids)))
          (branch (cea/elpaca-outdated--target-branch dir e))
          (old-ref (cea/elpaca-upgrade-git! dir "rev-parse" "HEAD"))
          (new-ref (cea/elpaca-upgrade-git! dir "rev-parse" (concat "origin/" branch))))
-    (unless (string= old-ref new-ref)
+    ;; A locked commit that already contains the branch tip is not
+    ;; outdated; applying the tip would be a downgrade.
+    (unless (or (string= old-ref new-ref)
+                (cea/elpaca-upgrade-git dir "merge-base" "--is-ancestor" new-ref old-ref))
       (let ((fast-forward (cea/elpaca-upgrade-git dir "merge-base" "--is-ancestor" old-ref new-ref))
             (commits (cea/elpaca-upgrade-git! dir "rev-list" "--count" (concat old-ref ".." new-ref)))
             (files (cea/elpaca-upgrade-git! dir "diff" "--shortstat" old-ref new-ref)))
