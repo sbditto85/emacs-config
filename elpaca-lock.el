@@ -189,7 +189,7 @@
                                      "*-pkg.el"))
                           :source "elpaca-menu-lock-file" :protocol
                           https :inherit t :depth treeless :ref
-                          "8ac9f2fc2ce29fc534ba30dcb30bb6a4a5d0f5b5"
+                          "cbcfe901d52c4f47b5e5c453683e936453ee3aad"
                           :id doom-modeline :type git))
  (dumb-jump :source "elpaca-menu-lock-file" :recipe
             (:package "dumb-jump" :repo "jacktasia/dumb-jump" :fetcher
@@ -479,7 +479,7 @@
                    (:exclude "lisp/magit-section.el"))
                   :source "elpaca-menu-lock-file" :protocol https
                   :inherit t :depth treeless :ref
-                  "4402e972bb2b6df2dad25118d8a638fa5a9b3e5b" :id magit
+                  "5e21bac5304c931cccbe16073758e2c464e40298" :id magit
                   :type git))
  (magit-section :source "elpaca-menu-lock-file" :recipe
                 (:package "magit-section" :fetcher github :repo
@@ -489,7 +489,7 @@
                            "magit-section-pkg.el")
                           :source "elpaca-menu-lock-file" :protocol
                           https :inherit t :depth treeless :ref
-                          "4402e972bb2b6df2dad25118d8a638fa5a9b3e5b"
+                          "5e21bac5304c931cccbe16073758e2c464e40298"
                           :id magit-section :type git))
  (markdown-mode :source "elpaca-menu-lock-file" :recipe
                 (:package "markdown-mode" :fetcher github :repo
@@ -634,7 +634,7 @@
                                  "README*" "*-pkg.el"))
                       :source "elpaca-menu-lock-file" :protocol https
                       :inherit t :depth treeless :ref
-                      "0058837c048cc031ca1a13f598a6a6604777458b" :id
+                      "265e243732761b925e03ebb61930a3aeea034d0e" :id
                       rust-mode :type git))
  (s :source "elpaca-menu-lock-file" :recipe
     (:package "s" :fetcher github :repo "magnars/s.el" :files
